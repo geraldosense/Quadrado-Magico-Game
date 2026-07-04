@@ -33,9 +33,9 @@ export function createGameView(container, engine, {
   let timerId = null;
   let paused = false;
   let showPause = false;
-  let showGameOver = false;
   let showConfirmRestart = false;
   let victoryOverlay = null;
+  let gameOverOverlay = null;
   let wasGameOver = false;
   let wasError = false;
   let lastErrorsCount = 0;
@@ -170,6 +170,115 @@ export function createGameView(container, engine, {
     document.body.classList.remove('victory-open');
   }
 
+  function showGameOverModal() {
+    if (gameOverOverlay) return;
+
+    const levelId = engine.currentLevel?.id ?? 1;
+    const progress = progressStore.get();
+    const bestTime = progress.completedLevels[levelId]?.bestTime;
+    const bestTimeLabel = bestTime != null ? formatTime(bestTime) : '—';
+    const errorsLabel = `${engine.errorsCount} ${engine.errorsCount === 1 ? 'erro' : 'erros'}`;
+
+    gameOverOverlay = document.createElement('div');
+    gameOverOverlay.className = 'gameover-overlay';
+    gameOverOverlay.innerHTML = `
+      <div class="gameover-modal" role="dialog" aria-labelledby="gameover-title" aria-modal="true">
+        <button type="button" class="gameover-close" data-action="gameover-close" aria-label="Fechar">×</button>
+        <div class="gameover-confetti" aria-hidden="true"></div>
+        <div class="gameover-face-wrap" aria-hidden="true">
+          <div class="gameover-face">😞</div>
+        </div>
+        <h2 id="gameover-title">${UI_LABELS.game.gameOver}</h2>
+        <p class="gameover-subtitle">${UI_LABELS.game.gameOverSubtitle}</p>
+        <div class="gameover-stats">
+          <div class="gameover-stat">
+            <span class="gameover-stat-icon gameover-stat-icon--target">🎯</span>
+            <span class="gameover-stat-label">${UI_LABELS.game.gameOverAttempts}</span>
+            <strong>${errorsLabel}</strong>
+          </div>
+          <div class="gameover-stat">
+            <span class="gameover-stat-icon gameover-stat-icon--time">🕐</span>
+            <span class="gameover-stat-label">${UI_LABELS.game.time.toUpperCase()}</span>
+            <strong>${formatTime(elapsed)}</strong>
+          </div>
+          <div class="gameover-stat">
+            <span class="gameover-stat-icon gameover-stat-icon--best">⭐</span>
+            <span class="gameover-stat-label">${UI_LABELS.game.gameOverBestTime}</span>
+            <strong>${bestTimeLabel}</strong>
+          </div>
+        </div>
+        <div class="gameover-motivation">
+          <span class="gameover-motivation-icon" aria-hidden="true">❤️</span>
+          <p>${UI_LABELS.game.gameOverMotivation}</p>
+        </div>
+        <div class="gameover-actions">
+          <button type="button" class="gameover-action gameover-action--primary" data-action="gameover-restart">
+            <span class="gameover-action-icon">↻</span>
+            <span class="gameover-action-text">
+              <strong>${UI_LABELS.game.restartMatch}</strong>
+              <small>${UI_LABELS.game.gameOverRestartSub}</small>
+            </span>
+          </button>
+          <button type="button" class="gameover-action gameover-action--levels" data-action="gameover-levels">
+            <span class="gameover-action-icon">☰</span>
+            <span class="gameover-action-text">
+              <strong>${UI_LABELS.game.gameOverSelectLevel}</strong>
+              <small>${UI_LABELS.game.gameOverLevelsSub}</small>
+            </span>
+          </button>
+          <button type="button" class="gameover-action gameover-action--exit" data-action="gameover-exit">
+            <span class="gameover-action-icon">⎋</span>
+            <span class="gameover-action-text">
+              <strong>${UI_LABELS.game.gameOverExit}</strong>
+              <small>${UI_LABELS.game.gameOverExitSub}</small>
+            </span>
+          </button>
+        </div>
+        <div class="gameover-scene" aria-hidden="true">
+          <svg viewBox="0 0 320 48" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 48 L0 34 L40 18 L80 30 L120 12 L160 26 L200 10 L240 24 L280 14 L320 28 L320 48 Z" fill="#f8c4c4"/>
+            <path d="M0 48 L0 38 L60 28 L110 36 L150 24 L190 34 L230 22 L280 32 L320 26 L320 48 Z" fill="#f5a8a8"/>
+            <path d="M200 10 L208 6 L216 10" stroke="#e74c3c" stroke-width="2" fill="none"/>
+            <rect x="206" y="2" width="4" height="5" fill="#e74c3c"/>
+          </svg>
+        </div>
+      </div>`;
+
+    document.body.appendChild(gameOverOverlay);
+    document.body.classList.add('gameover-open');
+
+    const restart = () => {
+      hideGameOverModal();
+      wasGameOver = false;
+      wasError = false;
+      lastErrorsCount = 0;
+      engine.restartLevel();
+      startTimer();
+      soundManager?.resumeMusic();
+      render(engine.getState());
+    };
+
+    gameOverOverlay.querySelector('[data-action="gameover-restart"]').addEventListener('click', restart);
+    gameOverOverlay.querySelector('[data-action="gameover-levels"]').addEventListener('click', () => {
+      hideGameOverModal();
+      onLevels();
+    });
+    gameOverOverlay.querySelector('[data-action="gameover-exit"]').addEventListener('click', () => {
+      hideGameOverModal();
+      onBack();
+    });
+    gameOverOverlay.querySelector('[data-action="gameover-close"]').addEventListener('click', () => {
+      hideGameOverModal();
+      onBack();
+    });
+  }
+
+  function hideGameOverModal() {
+    gameOverOverlay?.remove();
+    gameOverOverlay = null;
+    document.body.classList.remove('gameover-open');
+  }
+
   function render(state) {
     const {
       board, selectedNumber, availableNumbers, validation, hintsRemaining, hintsMax,
@@ -197,9 +306,9 @@ export function createGameView(container, engine, {
       soundManager?.playLose();
       soundManager?.pauseMusic();
       stopTimer();
+      showGameOverModal();
     }
     wasGameOver = shouldGameOver;
-    showGameOver = shouldGameOver;
 
     if (errorsCount > lastErrorsCount) {
       soundManager?.playError();
@@ -213,11 +322,6 @@ export function createGameView(container, engine, {
       // feedback visual adicional quando configurado
     }
     wasError = state.hasError;
-
-    const gameOverReason = engine.getGameOverReason();
-    const gameOverMsg = gameOverReason === 'errors'
-      ? UI_LABELS.game.gameOverErrors
-      : UI_LABELS.game.gameOverMsg;
 
     const livesHtml = Array.from({ length: maxErrors }, (_, i) =>
       `<span class="life-icon ${i < errorsRemaining ? 'life-icon--full' : 'life-icon--lost'}" aria-hidden="true">${i < errorsRemaining ? '❤️' : '🖤'}</span>`
@@ -328,16 +432,6 @@ export function createGameView(container, engine, {
             </div>
           </div>` : ''}
 
-        ${showGameOver ? `
-          <div class="overlay-menu" data-overlay="gameover">
-            <div class="overlay-menu-card overlay-menu-card--gameover">
-              <div class="gameover-icon">😞</div>
-              <h2>${UI_LABELS.game.gameOver}</h2>
-              <p>${gameOverMsg}</p>
-              <button type="button" class="gameover-btn" data-action="gameover-restart">${UI_LABELS.game.restartMatch}</button>
-            </div>
-          </div>` : ''}
-
         ${showConfirmRestart ? `
           <div class="overlay-menu" data-overlay="confirm">
             <div class="overlay-menu-card overlay-menu-card--confirm">
@@ -358,7 +452,7 @@ export function createGameView(container, engine, {
     } else {
       engine.restartLevel();
       startTimer();
-      showGameOver = false;
+      hideGameOverModal();
       render(engine.getState());
     }
   }
@@ -377,18 +471,9 @@ export function createGameView(container, engine, {
     container.querySelectorAll('[data-action="hint"], [data-action="hint-top"]').forEach((btn) => {
       btn.addEventListener('click', () => { if (engine.useHint()) soundManager?.playSelect(); });
     });
-    container.querySelector('[data-action="gameover-restart"]')?.addEventListener('click', () => {
-      showGameOver = false;
-      wasGameOver = false;
-      wasError = false;
-      engine.restartLevel();
-      startTimer();
-      soundManager?.resumeMusic();
-      render(engine.getState());
-    });
     container.querySelector('[data-action="confirm-yes"]')?.addEventListener('click', () => {
       showConfirmRestart = false;
-      showGameOver = false;
+      hideGameOverModal();
       engine.restartLevel();
       startTimer();
       render(engine.getState());
@@ -535,9 +620,9 @@ export function createGameView(container, engine, {
       wasError = false;
       lastErrorsCount = 0;
       showPause = false;
-      showGameOver = false;
       showConfirmRestart = false;
       hideVictoryModal();
+      hideGameOverModal();
       startTimer();
       render(engine.getState());
     },
@@ -548,6 +633,7 @@ export function createGameView(container, engine, {
     unmount() {
       stopTimer();
       hideVictoryModal();
+      hideGameOverModal();
       soundManager?.stopMusic();
       wasWin = false;
       wasGameOver = false;
