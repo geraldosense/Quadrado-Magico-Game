@@ -128,6 +128,12 @@
   color: var(--navy);
 }
 
+.level-chip-icon {
+  font-size: 0.65rem;
+  line-height: 1;
+  opacity: 0.85;
+}
+
 .level-chip-stars {
   font-size: 0.55rem;
   color: var(--yellow-spark);

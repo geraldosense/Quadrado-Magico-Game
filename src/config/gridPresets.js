@@ -90,13 +90,18 @@ export function transformBoard(board, variantIndex) {
   return b;
 }
 
-export function buildWinConditions(size) {
-  return [
+export function buildWinConditions(size, { diagonals = true } = {}) {
+  const conditions = [
     { id: 'rows', label: `${size} linhas`, type: 'rows' },
     { id: 'cols', label: `${size} colunas`, type: 'cols' },
-    { id: 'diag-main', label: 'Diagonal principal', type: 'diagonal', index: 0 },
-    { id: 'diag-sec', label: 'Diagonal secundária', type: 'diagonal', index: 1 },
   ];
+  if (diagonals) {
+    conditions.push(
+      { id: 'diag-main', label: 'Diagonal principal', type: 'diagonal', index: 0 },
+      { id: 'diag-sec', label: 'Diagonal secundária', type: 'diagonal', index: 1 }
+    );
+  }
+  return conditions;
 }
 
 export function getGridPresetForLevel(levelId) {

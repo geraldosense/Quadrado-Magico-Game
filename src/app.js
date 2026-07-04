@@ -176,10 +176,14 @@ class App {
 
     if (view === 'play') {
       this.gameView.mount(levelId ?? this.currentLevelId);
-      this.soundManager.startMusic();
+      this.soundManager.startGameMusic();
     } else {
       this.gameView.unmount();
-      this.soundManager.stopMusic();
+      if (view !== 'loading') {
+        this.soundManager.startMenuMusic();
+      } else {
+        this.soundManager.stopMusic();
+      }
     }
   }
 

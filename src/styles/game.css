@@ -151,6 +151,35 @@
   text-align: center;
 }
 
+.instruction-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.puzzle-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(26, 58, 92, 0.15);
+  color: var(--navy);
+}
+
+.puzzle-badge--semi {
+  background: #fff3cd;
+  border-color: #e6c200;
+  color: #7a5c00;
+}
+
 /* Área principal */
 .game-play-area {
   display: grid;

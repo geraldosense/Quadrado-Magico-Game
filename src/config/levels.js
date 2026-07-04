@@ -1,28 +1,35 @@
+import { buildWinConditions, getGridPresetForLevel, GRID_PRESETS } from './gridPresets.js';
 import {
-  buildWinConditions,
-  cloneBoard,
-  getGridPresetForLevel,
-  GRID_PRESETS,
-  transformBoard,
-} from './gridPresets.js';
+  pick3x3Config,
+  pick4x4Config,
+  pick5x5Config,
+  isValidMagicSquare,
+} from './magicSquares.js';
+import {
+  buildClueBoard,
+  buildObjective,
+  pickPattern,
+} from './puzzlePatterns.js';
 
 export const TOTAL_LEVELS = 150;
 export const MAX_ERRORS = 3;
-export const BLANK_START_RATIO = 0.15;
+export const BLANK_START_RATIO = 0.12;
 
-const TITLES_3 = [
-  'Primeiros Passos', 'O Centro Mágico', 'Diagonal Principal', 'Falta Um Número',
-  'Desafio Completo', 'Soma Quinze', 'Cantos Mágicos', 'Linha de Ouro',
-  'Coluna Secreta', 'Equilíbrio', 'Padrão Oculto', 'Raciocínio Rápido',
-];
-const TITLES_4 = [
-  'Quadrado Maior', 'Soma Trinta e Quatro', 'Mundo da Prata', 'Desafio 4×4',
-  'Estratega', 'Matriz Complexa', 'Lógica Avançada', 'Puzzle Profundo',
-];
-const TITLES_5 = [
-  'Quadrado Supremo', 'Soma Sessenta e Cinco', 'Mundo de Ouro', 'Desafio 5×5',
-  'Grande Mestre', 'Matriz Lendária', 'Lógica Suprema', 'Puzzle Épico',
-];
+const TITLES = {
+  scatter: ['Mistério', 'Enigma', 'Puzzle', 'Desafio'],
+  fullRow: ['Linha de Ouro', 'Fio Condutor', 'Trilha', 'Rota'],
+  fullCol: ['Coluna Mestra', 'Pilar', 'Eixo', 'Torre'],
+  mainDiag: ['Diagonal Mágica', 'Caminho Principal', 'Ascensão'],
+  antiDiag: ['Diagonal Inversa', 'Espelho', 'Reflexo'],
+  corners: ['Quatro Cantos', 'Bordas', 'Limites'],
+  cross: ['Cruz de Ferro', 'Centro Mágico', 'Interseção'],
+  frame: ['Moldura', 'Contorno', 'Perímetro'],
+  twinRows: ['Duplo Fio', 'Paralelo', 'Harmonia'],
+  checker: ['Xadrez', 'Alternado', 'Ritmo'],
+  spiral: ['Espiral', 'Vórtice', 'Redemoinho'],
+  minimal: ['Essência', 'Núcleo', 'Ápice', 'Supremo'],
+  blank: ['Origem', 'Vazio', 'Génese', 'Zero'],
+};
 
 function seededShuffle(items, seed) {
   const arr = [...items];
@@ -49,91 +56,113 @@ function countClues(board) {
   return board.flat().filter((n) => n !== null).length;
 }
 
-function clueCountForLevel(size, tierIndex, tierTotal) {
+function clueCountForLevel(size, tierIndex, tierTotal, pattern) {
+  if (pattern.id === 'blank') return 0;
   const cellCount = size * size;
-  const minClues = size === 3 ? 1 : size === 4 ? 2 : 3;
-  const maxClues = Math.max(minClues + 2, Math.floor(cellCount * 0.72));
-  if (tierTotal <= 1) return maxClues;
-  const ratio = 1 - (tierIndex - 1) / (tierTotal - 1);
+  const minClues = size === 3 ? 2 : size === 4 ? 3 : 4;
+  const maxClues = pattern.id === 'frame'
+    ? Math.floor(cellCount * 0.85)
+    : Math.max(minClues + 1, Math.floor(cellCount * 0.68));
+  const ratio = 1 - (tierIndex - 1) / Math.max(1, tierTotal - 1);
   return Math.max(minClues, Math.round(minClues + ratio * (maxClues - minClues)));
 }
 
-function isBlankStart(id) {
-  return (id * 17 + 3) % 100 < Math.round(BLANK_START_RATIO * 100);
+function isBlankStart(id, tierIndex) {
+  if (tierIndex <= 2) return false;
+  return (id * 13 + 7) % 100 < Math.round(BLANK_START_RATIO * 100);
 }
 
-function hintsForLevel(tierIndex, tierTotal, difficulty) {
+function pickWinMode(id, tierIndex, tierTotal, size) {
+  if (size === 3 || tierIndex <= tierTotal * 0.35) return 'full';
+  if ((id + tierIndex) % 9 === 0) return 'semi';
+  if (tierIndex > tierTotal * 0.7 && (id % 11 === 0)) return 'semi';
+  return 'full';
+}
+
+function hintsForLevel(tierIndex, tierTotal, difficulty, pattern) {
+  if (pattern.id === 'minimal' || pattern.id === 'blank') return 0;
   if (difficulty === 'Extremo') return 0;
-  if (difficulty === 'Difícil' && tierIndex > tierTotal * 0.55) return 0;
+  if (difficulty === 'Difícil' && tierIndex > tierTotal * 0.5) return 0;
   return 1;
 }
 
-function difficultyLabel(tierIndex, tierTotal) {
-  const ratio = tierIndex / tierTotal;
-  if (ratio <= 0.25) return 'Fácil';
-  if (ratio <= 0.55) return 'Médio';
-  if (ratio <= 0.8) return 'Difícil';
+function maxErrorsForLevel(tierIndex, tierTotal, difficulty) {
+  if (difficulty === 'Extremo' && tierIndex > tierTotal * 0.75) return 2;
+  return MAX_ERRORS;
+}
+
+function difficultyLabel(tierIndex, tierTotal, pattern, winMode) {
+  let score = tierIndex / tierTotal;
+  if (pattern.id === 'minimal' || pattern.id === 'blank') score += 0.25;
+  if (winMode === 'semi') score += 0.05;
+  if (score <= 0.3) return 'Fácil';
+  if (score <= 0.55) return 'Médio';
+  if (score <= 0.8) return 'Difícil';
   return 'Extremo';
 }
 
-function pickTitle(id, size, tierIndex) {
-  const pool = size === 3 ? TITLES_3 : size === 4 ? TITLES_4 : TITLES_5;
-  return `${pool[(tierIndex - 1) % pool.length]} ${tierIndex > pool.length ? tierIndex : ''}`.trim();
+function pickTitle(patternId, tierIndex, seed) {
+  const pool = TITLES[patternId] ?? TITLES.scatter;
+  const word = pool[(tierIndex + seed) % pool.length];
+  return tierIndex > pool.length ? `${word} ${tierIndex}` : word;
 }
 
-function buildPuzzleBoard(solution, clueCount, seed) {
-  const size = solution.length;
-  const positions = [];
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) positions.push([r, c]);
-  }
-  const chosen = seededShuffle(positions, seed).slice(0, clueCount);
-  const board = Array.from({ length: size }, () => Array(size).fill(null));
-  chosen.forEach(([r, c]) => {
-    board[r][c] = solution[r][c];
-  });
-  return board;
+function resolveSolutionConfig(id, preset, tierIndex) {
+  const { size, baseSolution } = preset;
+  if (size === 3) return pick3x3Config(baseSolution, id);
+  if (size === 4) return pick4x4Config(baseSolution, tierIndex);
+  return pick5x5Config(baseSolution, tierIndex);
 }
 
 function createLevel(id) {
   const preset = getGridPresetForLevel(id);
-  const { size, targetSum, numbers, baseSolution, world } = preset;
+  const { size, world } = preset;
   const tierIndex = id - world.levelFrom + 1;
   const tierTotal = world.levelTo - world.levelFrom + 1;
-  const solution = transformBoard(baseSolution, id - 1);
-  const blankStart = isBlankStart(id);
-  const diff = difficultyLabel(tierIndex, tierTotal);
-  const clueCount = blankStart ? 0 : clueCountForLevel(size, tierIndex, tierTotal);
-  const initialBoard = blankStart
+
+  const blankStart = isBlankStart(id, tierIndex);
+  const pattern = pickPattern(id, tierIndex, tierTotal, blankStart);
+  const winMode = pickWinMode(id, tierIndex, tierTotal, size);
+  const { solution, numbers, targetSum, numberOffset } = resolveSolutionConfig(id, preset, tierIndex);
+
+  const clueCount = clueCountForLevel(size, tierIndex, tierTotal, pattern);
+  const initialBoard = pattern.id === 'blank'
     ? Array.from({ length: size }, () => Array(size).fill(null))
-    : buildPuzzleBoard(solution, clueCount, id * 7919);
-  const hints = hintsForLevel(tierIndex, tierTotal, diff);
+    : buildClueBoard(solution, pattern, clueCount, id * 7919);
+
+  const diff = difficultyLabel(tierIndex, tierTotal, pattern, winMode);
+  const hints = hintsForLevel(tierIndex, tierTotal, diff, pattern);
+  const maxErrors = maxErrorsForLevel(tierIndex, tierTotal, diff);
+  const useDiagonals = winMode === 'full';
 
   return {
     id,
     name: `Nível ${id}`,
-    title: pickTitle(id, size, tierIndex),
+    title: pickTitle(pattern.id, tierIndex, id),
     difficulty: diff,
     gridLabel: world.gridLabel,
     gridSize: size,
     cardTier: world.cardTier,
     worldId: world.id,
-    blankStart,
-    objective: blankStart
-      ? `Tabuleiro vazio! Comece do zero e complete o quadrado ${world.gridLabel} (soma ${targetSum}).`
-      : `Complete o quadrado ${world.gridLabel}. Cada linha, coluna e diagonal deve somar ${targetSum}.`,
+    blankStart: pattern.id === 'blank',
+    puzzleType: pattern.id,
+    puzzleLabel: pattern.label,
+    puzzleIcon: pattern.icon,
+    winMode,
+    numberOffset,
+    objective: buildObjective(pattern, winMode, targetSum, world.gridLabel, numberOffset),
     initialBoard,
     solution,
     lockedCells: lockedFromBoard(initialBoard),
     clues: countClues(initialBoard),
     hintsMax: hints,
-    maxErrors: MAX_ERRORS,
+    maxErrors,
     gridConfig: {
       rows: size,
       cols: size,
       targetSum,
       numbers,
-      winConditions: buildWinConditions(size),
+      winConditions: buildWinConditions(size, { diagonals: useDiagonals }),
     },
   };
 }
@@ -143,8 +172,9 @@ export const LEVELS = Array.from({ length: TOTAL_LEVELS }, (_, i) => createLevel
 export const SOLUTION = GRID_PRESETS[3].baseSolution;
 
 export function validateExercise(level) {
-  const { initialBoard, solution } = level;
+  const { initialBoard, solution, winMode } = level;
   const n = solution.length;
+  if (!isValidMagicSquare(solution, winMode !== 'semi')) return false;
   for (let r = 0; r < n; r++) {
     for (let c = 0; c < n; c++) {
       const clue = initialBoard[r][c];
@@ -178,6 +208,6 @@ export function getWorldProgress(worldId, progress) {
 
 LEVELS.forEach((level) => {
   if (!validateExercise(level)) {
-    console.error(`Exercício inválido: ${level.name}`);
+    console.error(`Exercício inválido: ${level.name} (${level.puzzleType})`);
   }
 });

@@ -1,4 +1,4 @@
-/** Arpejos matemáticos — sequências ascendentes com ritmo animado */
+/** Arpejos matemáticos — música do jogo (animada) */
 const MATH_ARPEGGIOS = [
   [261.63, 329.63, 392.0, 523.25],
   [293.66, 369.99, 440.0, 587.33],
@@ -8,20 +8,38 @@ const MATH_ARPEGGIOS = [
 
 const BASS_NOTES = [130.81, 146.83, 164.81, 174.61];
 
+/** Acordes suaves — música do menu (relaxada e feliz) */
+const MENU_CHORDS = [
+  [261.63, 329.63, 392.0],
+  [392.0, 493.88, 587.33],
+  [220.0, 261.63, 329.63],
+  [349.23, 440.0, 523.25],
+];
+
+const MENU_MELODY = [523.25, 587.33, 659.25, 783.99, 880.0, 783.99, 659.25, 587.33, 523.25, 659.25, 783.99];
+
 export class SoundManager {
   constructor(settingsStore) {
     this.settingsStore = settingsStore;
     this.ctx = null;
-    this.musicPlaying = false;
+    this.musicMode = 'none'; // 'none' | 'menu' | 'game'
     this.musicPaused = false;
     this.musicGain = null;
     this.musicFilter = null;
+
+    // Game music state
     this.bassOsc = null;
     this.bassGain = null;
     this.arpeggioStep = 0;
     this.arpeggioIndex = 0;
     this.arpeggioTimeout = null;
     this.bassInterval = null;
+
+    // Menu music state
+    this.menuChordIndex = 0;
+    this.menuMelodyIndex = 0;
+    this.menuChordTimeout = null;
+    this.menuMelodyTimeout = null;
 
     settingsStore.subscribe(() => this.applyMusicSettings());
   }
@@ -42,6 +60,10 @@ export class SoundManager {
   getMusicVolume() {
     const { musicEnabled, musicVolume, masterVolume = 100 } = this.settingsStore.get();
     return musicEnabled ? (musicVolume / 100) * (masterVolume / 100) * 0.18 : 0;
+  }
+
+  getMenuMusicVolume() {
+    return this.getMusicVolume() * 0.85;
   }
 
   previewSounds() {
@@ -90,39 +112,75 @@ export class SoundManager {
     setTimeout(() => this.playTone(140, 0.2, 'sawtooth', 0.15), 80);
   }
 
+  /** Música animada — durante o jogo */
+  startGameMusic() {
+    this.startMusicMode('game');
+  }
+
+  /** Música relaxada — menu e ecrãs */
+  startMenuMusic() {
+    this.startMusicMode('menu');
+  }
+
+  /** Compatibilidade */
   startMusic() {
+    this.startGameMusic();
+  }
+
+  startMusicMode(mode) {
     if (!this.settingsStore.get().musicEnabled) return;
 
-    if (this.musicPlaying && !this.musicPaused) return;
+    if (this.musicMode === mode && !this.musicPaused) return;
 
-    if (this.musicPlaying && this.musicPaused) {
+    if (this.musicMode === mode && this.musicPaused) {
       this.musicPaused = false;
-      this.fadeMusicTo(this.getMusicVolume(), 0.8);
+      this.fadeMusicTo(this.getTargetVolume(), 0.8);
       return;
     }
 
-    this.musicPlaying = true;
-    this.musicPaused = false;
-    this.arpeggioStep = 0;
-    this.arpeggioIndex = 0;
-    const ctx = this.getContext();
+    if (this.musicMode !== 'none') {
+      this.stopMusicImmediate();
+    }
 
+    this.musicMode = mode;
+    this.musicPaused = false;
+    this.setupMusicChain(mode === 'menu' ? 3200 : 2800);
+
+    if (mode === 'game') {
+      this.arpeggioStep = 0;
+      this.arpeggioIndex = 0;
+      this.startBass(BASS_NOTES[0]);
+      this.scheduleArpeggio();
+      this.bassInterval = setInterval(() => this.shiftBass(), 4000);
+    } else {
+      this.menuChordIndex = 0;
+      this.menuMelodyIndex = 0;
+      this.scheduleMenuChord();
+      this.scheduleMenuMelody();
+    }
+
+    this.fadeMusicTo(this.getTargetVolume(), 1.2);
+  }
+
+  setupMusicChain(filterFreq) {
+    const ctx = this.getContext();
     this.musicGain = ctx.createGain();
     this.musicGain.gain.value = 0.001;
 
     this.musicFilter = ctx.createBiquadFilter();
     this.musicFilter.type = 'lowpass';
-    this.musicFilter.frequency.value = 2800;
-    this.musicFilter.Q.value = 0.7;
+    this.musicFilter.frequency.value = filterFreq;
+    this.musicFilter.Q.value = 0.6;
 
     this.musicGain.connect(this.musicFilter);
     this.musicFilter.connect(ctx.destination);
-
-    this.startBass(BASS_NOTES[0]);
-    this.scheduleArpeggio();
-    this.bassInterval = setInterval(() => this.shiftBass(), 4000);
-    this.fadeMusicTo(this.getMusicVolume(), 1.2);
   }
+
+  getTargetVolume() {
+    return this.musicMode === 'menu' ? this.getMenuMusicVolume() : this.getMusicVolume();
+  }
+
+  /* ---- Música do jogo ---- */
 
   startBass(freq) {
     this.stopBass();
@@ -158,13 +216,13 @@ export class SoundManager {
   }
 
   shiftBass() {
-    if (!this.musicPlaying || this.musicPaused) return;
+    if (this.musicMode !== 'game' || this.musicPaused) return;
     this.arpeggioIndex = (this.arpeggioIndex + 1) % BASS_NOTES.length;
     this.startBass(BASS_NOTES[this.arpeggioIndex]);
   }
 
   scheduleArpeggio() {
-    if (!this.musicPlaying) return;
+    if (this.musicMode !== 'game') return;
     this.arpeggioTimeout = setTimeout(() => {
       this.playArpeggioNote();
       this.scheduleArpeggio();
@@ -172,7 +230,7 @@ export class SoundManager {
   }
 
   playArpeggioNote() {
-    if (!this.musicPlaying || this.musicPaused || !this.musicGain) return;
+    if (this.musicMode !== 'game' || this.musicPaused || !this.musicGain) return;
 
     const arp = MATH_ARPEGGIOS[this.arpeggioIndex % MATH_ARPEGGIOS.length];
     const freq = arp[this.arpeggioStep % arp.length];
@@ -181,24 +239,69 @@ export class SoundManager {
       this.arpeggioIndex = (this.arpeggioIndex + 1) % MATH_ARPEGGIOS.length;
     }
 
+    this.playThroughMusicBus(freq, 0.35, 'square', 0.45, 0.02);
+  }
+
+  /* ---- Música do menu ---- */
+
+  scheduleMenuChord() {
+    if (this.musicMode !== 'menu') return;
+    this.menuChordTimeout = setTimeout(() => {
+      this.playMenuChord();
+      this.scheduleMenuChord();
+    }, 3200);
+  }
+
+  scheduleMenuMelody() {
+    if (this.musicMode !== 'menu') return;
+    this.menuMelodyTimeout = setTimeout(() => {
+      this.playMenuMelodyNote();
+      this.scheduleMenuMelody();
+    }, 680);
+  }
+
+  playMenuChord() {
+    if (this.musicMode !== 'menu' || this.musicPaused || !this.musicGain) return;
+
+    const chord = MENU_CHORDS[this.menuChordIndex % MENU_CHORDS.length];
+    this.menuChordIndex += 1;
+
+    chord.forEach((freq, i) => {
+      setTimeout(() => {
+        this.playThroughMusicBus(freq * 0.5, 1.8, 'sine', 0.22, 0.15);
+      }, i * 120);
+    });
+  }
+
+  playMenuMelodyNote() {
+    if (this.musicMode !== 'menu' || this.musicPaused || !this.musicGain) return;
+
+    const freq = MENU_MELODY[this.menuMelodyIndex % MENU_MELODY.length];
+    this.menuMelodyIndex += 1;
+    this.playThroughMusicBus(freq, 0.55, 'triangle', 0.35, 0.08);
+  }
+
+  playThroughMusicBus(freq, duration, type, volScale, attack = 0.03) {
     const ctx = this.getContext();
     const t = ctx.currentTime;
-    const vol = this.getMusicVolume() * 0.45;
+    const vol = this.getTargetVolume() * volScale;
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = 'square';
+    osc.type = type;
     osc.frequency.value = freq;
 
     gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(vol, t + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    gain.gain.linearRampToValueAtTime(vol, t + attack);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
 
     osc.connect(gain);
     gain.connect(this.musicGain);
     osc.start(t);
-    osc.stop(t + 0.4);
+    osc.stop(t + duration + 0.05);
   }
+
+  /* ---- Controlos partilhados ---- */
 
   fadeMusicTo(target, duration = 0.8) {
     if (!this.musicGain || !this.ctx) return;
@@ -210,44 +313,52 @@ export class SoundManager {
   }
 
   pauseMusic() {
-    if (!this.musicPlaying || this.musicPaused) return;
+    if (this.musicMode === 'none' || this.musicPaused) return;
     this.musicPaused = true;
     this.fadeMusicTo(0.001, 0.5);
   }
 
   resumeMusic() {
-    if (!this.musicPlaying || !this.musicPaused) return;
+    if (this.musicMode === 'none' || !this.musicPaused) return;
     this.musicPaused = false;
-    this.fadeMusicTo(this.getMusicVolume(), 0.6);
+    this.fadeMusicTo(this.getTargetVolume(), 0.6);
   }
 
   stopMusic() {
-    this.musicPlaying = false;
+    if (this.musicMode === 'none') return;
+    this.fadeMusicTo(0.001, 0.4);
+    setTimeout(() => this.stopMusicImmediate(), 450);
+  }
+
+  stopMusicImmediate() {
+    this.musicMode = 'none';
     this.musicPaused = false;
+
     clearTimeout(this.arpeggioTimeout);
     clearInterval(this.bassInterval);
+    clearTimeout(this.menuChordTimeout);
+    clearTimeout(this.menuMelodyTimeout);
+
     this.arpeggioTimeout = null;
     this.bassInterval = null;
+    this.menuChordTimeout = null;
+    this.menuMelodyTimeout = null;
 
-    if (this.musicGain && this.ctx) {
-      this.fadeMusicTo(0.001, 0.4);
-      setTimeout(() => {
-        this.stopBass();
-        this.musicGain?.disconnect();
-        this.musicFilter?.disconnect();
-        this.musicGain = null;
-        this.musicFilter = null;
-      }, 500);
-    } else {
-      this.stopBass();
-    }
+    this.stopBass();
+    this.musicGain?.disconnect();
+    this.musicFilter?.disconnect();
+    this.musicGain = null;
+    this.musicFilter = null;
   }
 
   applyMusicSettings() {
-    const vol = this.getMusicVolume();
-    if (this.musicPlaying) {
-      if (vol <= 0) this.stopMusic();
-      else if (!this.musicPaused) this.fadeMusicTo(vol, 0.3);
+    const vol = this.getTargetVolume();
+    if (this.musicMode !== 'none') {
+      if (vol <= 0 || !this.settingsStore.get().musicEnabled) {
+        this.stopMusicImmediate();
+      } else if (!this.musicPaused) {
+        this.fadeMusicTo(vol, 0.3);
+      }
     }
   }
 }

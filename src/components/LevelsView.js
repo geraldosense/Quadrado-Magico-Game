@@ -14,7 +14,9 @@ function renderLevelChip(level, progress) {
       class="level-chip level-chip--${level.cardTier} ${!unlocked ? 'level-chip--locked' : ''} ${completed ? 'level-chip--done' : ''} ${level.blankStart ? 'level-chip--blank' : ''}"
       data-level="${level.id}"
       ${!unlocked ? 'disabled aria-label="Bloqueado"' : ''}
-      aria-label="Nível ${level.id}${level.blankStart ? ' — do zero' : ''}">
+      aria-label="Nível ${level.id} — ${level.puzzleLabel ?? ''}${level.blankStart ? ' — do zero' : ''}"
+      title="${level.puzzleLabel ?? ''}${level.winMode === 'semi' ? ' (semi-mágico)' : ''}">
+      <span class="level-chip-icon" aria-hidden="true">${level.puzzleIcon ?? ''}</span>
       <span class="level-chip-num">${level.id}</span>
       <span class="level-chip-stars">${stars ? '★'.repeat(stars) : unlocked ? (level.blankStart ? '∅' : '○') : '🔒'}</span>
     </button>`;

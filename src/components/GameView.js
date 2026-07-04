@@ -182,6 +182,9 @@ export function createGameView(container, engine, {
     const levelName = engine.currentLevel?.name ?? UI_LABELS.game.level ?? 'Nível 1';
     const levelTitle = engine.currentLevel?.title ?? '';
     const levelObjective = engine.currentLevel?.objective ?? '';
+    const puzzleIcon = engine.currentLevel?.puzzleIcon ?? '';
+    const puzzleLabel = engine.currentLevel?.puzzleLabel ?? '';
+    const winMode = engine.currentLevel?.winMode ?? 'full';
     const settings = settingsStore.get();
     const effectiveHintsMax = settings.hintsEnabled ? hintsMax : 0;
 
@@ -240,7 +243,13 @@ export function createGameView(container, engine, {
             <div class="title-spark title-spark--right" aria-hidden="true"></div>
           </header>
 
-          <div class="instruction-banner"><p>${levelObjective || `Complete o quadrado ${engine.currentLevel?.gridLabel ?? '3×3'} com soma ${targetSum}.`}</p></div>
+          <div class="instruction-banner">
+            <div class="instruction-badges">
+              ${puzzleIcon ? `<span class="puzzle-badge" title="${puzzleLabel}">${puzzleIcon} ${puzzleLabel}</span>` : ''}
+              ${winMode === 'semi' ? '<span class="puzzle-badge puzzle-badge--semi">Semi-mágico</span>' : ''}
+            </div>
+            <p>${levelObjective || `Complete o quadrado ${engine.currentLevel?.gridLabel ?? '3×3'} com soma ${targetSum}.`}</p>
+          </div>
 
           <div class="game-play-area">
             <div class="grid-wrapper">

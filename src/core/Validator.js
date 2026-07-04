@@ -38,7 +38,7 @@ export function validateBoard(board, levelConfig) {
   const config = getGridConfig(levelConfig);
   const { rows, cols, diagonals } = calculateSums(board, config);
   const n = board.length;
-  const { targetSum } = config;
+  const { targetSum, winConditions = [] } = config;
 
   const rowResults = rows.map((sum, i) => isLineValid(board[i], sum, targetSum));
   const colResults = Array.from({ length: n }, (_, c) =>
@@ -58,11 +58,15 @@ export function validateBoard(board, levelConfig) {
   ];
 
   const isComplete = board.every((row) => row.every((cell) => cell !== null));
+  const checkRows = winConditions.some((c) => c.type === 'rows');
+  const checkCols = winConditions.some((c) => c.type === 'cols');
+  const checkDiags = winConditions.some((c) => c.type === 'diagonal');
+
   const isWin =
     isComplete &&
-    rowResults.every((r) => r === true) &&
-    colResults.every((r) => r === true) &&
-    diagResults.every((r) => r === true);
+    (!checkRows || rowResults.every((r) => r === true)) &&
+    (!checkCols || colResults.every((r) => r === true)) &&
+    (!checkDiags || diagResults.every((r) => r === true));
 
   return {
     rows: rowResults,
@@ -94,11 +98,17 @@ export function hasDuplicateNumbers(board) {
 }
 
 export function hasInvalidCompleteLine(board, levelConfig) {
+  const config = getGridConfig(levelConfig);
   const { rows, cols, diagonals } = validateBoard(board, levelConfig);
+  const winConditions = config.winConditions ?? [];
+  const checkRows = winConditions.some((c) => c.type === 'rows');
+  const checkCols = winConditions.some((c) => c.type === 'cols');
+  const checkDiags = winConditions.some((c) => c.type === 'diagonal');
+
   return (
-    rows.some((r) => r === false) ||
-    cols.some((r) => r === false) ||
-    diagonals.some((r) => r === false)
+    (checkRows && rows.some((r) => r === false)) ||
+    (checkCols && cols.some((r) => r === false)) ||
+    (checkDiags && diagonals.some((r) => r === false))
   );
 }
 
