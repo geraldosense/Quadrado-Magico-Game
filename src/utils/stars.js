@@ -2,11 +2,12 @@
  * Calcula estrelas com base no desempenho no nível.
  * 3 = perfeito · 2 = usou dicas ou teve erros · 1 = completou com dificuldade
  */
-export function calculateStars({ time, hintsUsed, errorsCount }) {
+export function calculateStars({ time, hintsUsed, errorsCount, gridSize = 3 }) {
   let stars = 3;
+  const timeLimit = gridSize === 3 ? 180 : gridSize === 4 ? 360 : 540;
   if (hintsUsed > 0) stars -= 1;
   if (errorsCount > 0) stars -= 1;
-  if (time > 180) stars -= 1;
+  if (time > timeLimit) stars -= 1;
   return Math.max(1, Math.min(3, stars));
 }
 

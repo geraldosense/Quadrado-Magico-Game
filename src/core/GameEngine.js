@@ -1,7 +1,7 @@
-import { GAME_DEFINITION } from '../config/gameDefinition.js';
 import { getSolutionForLevel } from '../config/levels.js';
 import {
   createEmptyBoard,
+  getGridConfig,
   hasDuplicateNumbers,
   hasInvalidCompleteLine,
   isNumberAvailable,
@@ -21,8 +21,12 @@ export class GameEngine {
     this.reset();
   }
 
+  get size() {
+    return this.currentLevel?.gridSize ?? 3;
+  }
+
   reset() {
-    this.board = createEmptyBoard();
+    this.board = createEmptyBoard(3);
     this.selectedNumber = null;
     this.lockedCells = new Set();
     this.history = [];
@@ -31,15 +35,16 @@ export class GameEngine {
     this.errorsCount = 0;
     this.hadError = false;
     this.currentLevel = null;
-    this.validation = validateBoard(this.board);
+    this.validation = validateBoard(this.board, null);
     this.notify();
   }
 
   loadLevel(level) {
     this.currentLevel = level;
+    const size = level.gridSize ?? 3;
     this.board = level.initialBoard
       ? level.initialBoard.map((row) => [...row])
-      : createEmptyBoard();
+      : createEmptyBoard(size);
     this.lockedCells = new Set(
       (level.lockedCells ?? []).map(([r, c]) => `${r},${c}`)
     );
@@ -49,7 +54,7 @@ export class GameEngine {
     this.hintsUsed = 0;
     this.errorsCount = 0;
     this.hadError = false;
-    this.validation = validateBoard(this.board);
+    this.validation = validateBoard(this.board, level);
     this.notify();
   }
 
@@ -67,18 +72,18 @@ export class GameEngine {
   }
 
   getState() {
+    const config = getGridConfig(this.currentLevel);
     return {
       board: this.board.map((row) => [...row]),
       selectedNumber: this.selectedNumber,
-      availableNumbers: GAME_DEFINITION.numbers.pool.filter((n) =>
-        isNumberAvailable(this.board, n)
-      ),
+      availableNumbers: config.numbers.filter((n) => isNumberAvailable(this.board, n)),
       validation: this.validation,
       lockedCells: [...this.lockedCells],
       hintsRemaining: this.hintsRemaining,
       hintsUsed: this.hintsUsed,
       errorsCount: this.errorsCount,
       currentLevel: this.currentLevel,
+      gridConfig: config,
       canUndo: this.history.length > 0,
       hasError: this.hadError,
     };
@@ -97,7 +102,7 @@ export class GameEngine {
     const prev = this.history.pop();
     this.board = prev.board;
     this.selectedNumber = prev.selectedNumber;
-    this.validation = validateBoard(this.board);
+    this.validation = validateBoard(this.board, this.currentLevel);
     this.updateErrorState();
     this.notify();
   }
@@ -125,7 +130,7 @@ export class GameEngine {
       this.board[row][col] = this.selectedNumber;
       this.selectedNumber = null;
     }
-    this.validation = validateBoard(this.board);
+    this.validation = validateBoard(this.board, this.currentLevel);
     this.updateErrorState();
     this.notify();
   }
@@ -146,7 +151,7 @@ export class GameEngine {
       this.board[row][col] = number;
       this.selectedNumber = null;
     }
-    this.validation = validateBoard(this.board);
+    this.validation = validateBoard(this.board, this.currentLevel);
     this.updateErrorState();
     this.notify();
   }
@@ -162,19 +167,20 @@ export class GameEngine {
     this.board[fromRow][fromCol] = null;
     this.board[toRow][toCol] = num;
     this.selectedNumber = null;
-    this.validation = validateBoard(this.board);
+    this.validation = validateBoard(this.board, this.currentLevel);
     this.updateErrorState();
     this.notify();
   }
 
   eraseSelected() {
     if (this.selectedNumber === null) return;
-    for (let r = 0; r < 3; r++) {
-      for (let c = 0; c < 3; c++) {
+    const n = this.size;
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
         if (this.board[r][c] === this.selectedNumber && !this.isCellLocked(r, c)) {
           this.pushHistory();
           this.board[r][c] = null;
-          this.validation = validateBoard(this.board);
+          this.validation = validateBoard(this.board, this.currentLevel);
           this.updateErrorState();
           this.notify();
           return;
@@ -185,13 +191,14 @@ export class GameEngine {
 
   clearBoard() {
     this.pushHistory();
-    for (let r = 0; r < 3; r++) {
-      for (let c = 0; c < 3; c++) {
+    const n = this.size;
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
         if (!this.isCellLocked(r, c)) this.board[r][c] = null;
       }
     }
     this.selectedNumber = null;
-    this.validation = validateBoard(this.board);
+    this.validation = validateBoard(this.board, this.currentLevel);
     this.hadError = false;
     this.notify();
   }
@@ -204,15 +211,16 @@ export class GameEngine {
   useHint() {
     if (this.hintsRemaining <= 0) return false;
     const solution = getSolutionForLevel(this.currentLevel);
-    for (let r = 0; r < 3; r++) {
-      for (let c = 0; c < 3; c++) {
+    const n = this.size;
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
         if (this.board[r][c] === null && !this.isCellLocked(r, c)) {
           this.pushHistory();
           this.board[r][c] = solution[r][c];
           this.hintsRemaining -= 1;
           this.hintsUsed += 1;
           this.selectedNumber = null;
-          this.validation = validateBoard(this.board);
+          this.validation = validateBoard(this.board, this.currentLevel);
           this.updateErrorState();
           this.notify();
           return true;
@@ -224,7 +232,8 @@ export class GameEngine {
 
   updateErrorState() {
     const hasProblem =
-      hasInvalidCompleteLine(this.board) || hasDuplicateNumbers(this.board);
+      hasInvalidCompleteLine(this.board, this.currentLevel) ||
+      hasDuplicateNumbers(this.board);
     if (hasProblem && !this.hadError) {
       this.errorsCount += 1;
     }

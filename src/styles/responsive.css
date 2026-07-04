@@ -233,16 +233,11 @@
 
   .home-hero { padding: 2rem 2rem 1.5rem; }
 
-  .levels-list {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.85rem;
-    padding: 1.25rem;
+  .levels-grid {
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    max-width: 720px;
+    margin: 0 auto;
   }
-
-  .level-card { flex-direction: column; align-items: stretch; }
-  .level-card-action { align-items: stretch; margin-top: 0.5rem; }
-  .level-play-btn { width: 100%; text-align: center; }
 
   .game-card {
     margin: 1.25rem auto;
@@ -337,11 +332,11 @@
   .home-title-line1 { font-size: 2.4rem; }
   .home-title-line2 { font-size: 3.2rem; }
 
-  .levels-list {
-    grid-template-columns: repeat(2, 1fr);
-    max-width: 720px;
+  .levels-grid {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    max-width: 960px;
     margin: 0 auto;
-    padding: 1.5rem 2rem 6rem;
+    padding: 0 1.5rem 6rem;
   }
 
   .levels-screen,
@@ -430,8 +425,8 @@
     --shell-max: 1040px;
   }
 
-  .levels-list {
-    grid-template-columns: repeat(3, 1fr);
+  .levels-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     max-width: 960px;
   }
 

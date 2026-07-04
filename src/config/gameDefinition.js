@@ -47,7 +47,7 @@ export const CREDITS = {
     {
       title: 'Sobre o Jogo',
       content:
-        'O Quadrado Mágico 3×3 é um puzzle de lógica matemática. Preencha a grelha com os números de 1 a 9, sem repetições, de forma que a soma de cada linha, coluna e diagonal seja igual a 15.',
+        'O Quadrado Mágico é um puzzle de lógica matemática com 150 níveis em três mundos: 3×3, 4×4 e 5×5. Preencha cada grelha sem repetir números, de forma que a soma de cada linha, coluna e diagonal seja sempre igual ao alvo do nível.',
     },
     {
       title: 'Objectivo Pedagógico',
@@ -100,6 +100,7 @@ export const UI_LABELS = {
     howToPlay: 'COMO JOGAR',
     info: 'INFORMAÇÃO',
     comingSoon: 'Funcionalidade em breve!',
+    allComplete: 'Parabéns! Completou todos os 150 níveis!',
     rewards: 'RECOMPENSAS',
     daily: 'DIÁRIO',
     achievements: 'CONQUISTAS',
@@ -117,6 +118,25 @@ export const UI_LABELS = {
     play: 'JOGAR',
     locked: 'Bloqueado',
     clues: 'pistas',
+    worldDesc: 'Níveis {from}–{to} · Quadrado {grid}',
+  },
+  stats: {
+    title: 'ESTATÍSTICAS',
+    scoreLabel: 'Pontuação total',
+    totalStars: 'Estrelas ganhas',
+    levelsCompleted: 'Níveis completos',
+    totalTime: 'Tempo de jogo',
+    perfectLevels: 'Níveis perfeitos (3★)',
+    totalHints: 'Dicas usadas',
+    totalErrors: 'Erros cometidos',
+    noHintWins: 'Vitórias sem dicas',
+    achievements: 'Conquistas',
+    viewAchievements: 'VER CONQUISTAS',
+    unlocked: 'desbloqueados',
+  },
+  achievements: {
+    title: 'CONQUISTAS',
+    unlocked: 'Desbloqueada',
   },
   settings: {
     title: 'Configurações',

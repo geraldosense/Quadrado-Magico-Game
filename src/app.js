@@ -2,13 +2,14 @@ import { GameEngine } from './core/GameEngine.js';
 import { SettingsStore } from './core/SettingsStore.js';
 import { ProgressStore } from './core/ProgressStore.js';
 import { SoundManager } from './core/SoundManager.js';
-import { getLevel, isLevelUnlocked } from './config/levels.js';
+import { getLevel, isLevelUnlocked, TOTAL_LEVELS } from './config/levels.js';
 import { renderLoadingView } from './components/LoadingView.js';
 import { renderMenuView, updateMenuStars } from './components/MenuView.js';
 import { renderLevelsView } from './components/LevelsView.js';
 import { renderInfoView } from './components/InfoView.js';
 import { renderHowToPlayView } from './components/HowToPlayView.js';
 import { renderSettingsView } from './components/SettingsView.js';
+import { renderStatsView, renderAchievementsView } from './components/StatsView.js';
 import { createGameView } from './components/GameView.js';
 import { UI_LABELS } from './config/gameDefinition.js';
 
@@ -27,6 +28,8 @@ class App {
     this.howtoContainer = document.getElementById('howto-view');
     this.infoContainer = document.getElementById('info-view');
     this.settingsContainer = document.getElementById('settings-view');
+    this.statsContainer = document.getElementById('stats-view');
+    this.achievementsContainer = document.getElementById('achievements-view');
     this.toast = document.getElementById('toast');
 
     this.containers = {
@@ -37,23 +40,26 @@ class App {
       howto: this.howtoContainer,
       info: this.infoContainer,
       settings: this.settingsContainer,
+      stats: this.statsContainer,
+      achievements: this.achievementsContainer,
     };
 
     this.gameView = createGameView(this.gameContainer, this.engine, {
       onBack: () => this.navigate('menu'),
       onLevels: () => this.navigate('levels'),
       onNextLevel: (id) => {
-        if (getLevel(id)) this.startLevel(id);
-        else { this.showToast(UI_LABELS.menu.comingSoon); this.navigate('levels'); }
+        if (id <= TOTAL_LEVELS && getLevel(id)) this.startLevel(id);
+        else { this.showToast(UI_LABELS.menu.allComplete); this.navigate('levels'); }
       },
       onSettings: () => this.navigate('settings'),
+      onStats: () => this.navigate('stats'),
       onComingSoon: () => this.showToast(UI_LABELS.menu.comingSoon),
       soundManager: this.soundManager,
       settingsStore: this.settingsStore,
       progressStore: this.progressStore,
     });
 
-    this.progressStore.subscribe(() => this.refreshMenu());
+    this.progressStore.subscribe(() => this.refreshViews());
     this.init();
   }
 
@@ -73,19 +79,13 @@ class App {
       onPlay: () => this.startLevel(this.getPlayLevelId()),
       onSelectLevel: () => this.navigate('levels'),
       onInfo: () => this.navigate('info'),
-      onStats: () => this.showToast(UI_LABELS.menu.comingSoon),
+      onStats: () => this.navigate('stats'),
       onSettings: () => this.navigate('settings'),
+      onAchievements: () => this.navigate('achievements'),
       onComingSoon: () => this.showToast(UI_LABELS.menu.comingSoon),
     });
-    renderLevelsView(this.levelsContainer, this.progressStore.get(), {
-      onBack: () => this.navigate('menu'),
-      onPlayLevel: (id) => this.startLevel(id),
-      onNavigate: (view) => this.navigate(view),
-      onComingSoon: () => this.showToast(UI_LABELS.menu.comingSoon),
-    });
-    renderInfoView(this.infoContainer, {
-      onBack: () => this.navigate('menu'),
-    });
+    this.refreshViews();
+    renderInfoView(this.infoContainer, { onBack: () => this.navigate('menu') });
     renderHowToPlayView(this.howtoContainer, {
       onBack: () => this.navigate('menu'),
       onPlay: () => this.startLevel(this.getPlayLevelId()),
@@ -96,28 +96,35 @@ class App {
     });
   }
 
-  refreshMenu() {
+  refreshViews() {
     updateMenuStars(this.menuContainer, this.progressStore.getTotalStars());
-    renderLevelsView(this.levelsContainer, this.progressStore.get(), {
+    const progress = this.progressStore.get();
+    const nav = {
       onBack: () => this.navigate('menu'),
       onPlayLevel: (id) => this.startLevel(id),
       onNavigate: (view) => this.navigate(view),
       onComingSoon: () => this.showToast(UI_LABELS.menu.comingSoon),
+    };
+    renderLevelsView(this.levelsContainer, progress, nav);
+    renderStatsView(this.statsContainer, this.progressStore, {
+      ...nav,
+      onAchievements: () => this.navigate('achievements'),
     });
+    renderAchievementsView(this.achievementsContainer, this.progressStore, nav);
   }
 
   getPlayLevelId() {
     const { unlockedLevel, completedLevels } = this.progressStore.get();
-    for (let i = 1; i <= unlockedLevel; i++) {
+    for (let i = 1; i <= Math.min(unlockedLevel, TOTAL_LEVELS); i++) {
       if (!completedLevels[i]) return i;
     }
-    return 1;
+    return Math.min(unlockedLevel, TOTAL_LEVELS);
   }
 
   startLevel(levelId) {
     const progress = this.progressStore.get();
     const level = getLevel(levelId);
-    if (!isLevelUnlocked(levelId, progress)) {
+    if (!level || !isLevelUnlocked(levelId, progress)) {
       this.showToast(UI_LABELS.levels.locked);
       return;
     }

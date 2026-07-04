@@ -1,5 +1,5 @@
-import { GAME_DEFINITION, GAME_RULES, UI_LABELS } from '../config/gameDefinition.js';
-import { getLevel } from '../config/levels.js';
+import { GAME_DEFINITION, UI_LABELS } from '../config/gameDefinition.js';
+import { getLevel, TOTAL_LEVELS } from '../config/levels.js';
 import { calculateStars, renderEarnedStars } from '../utils/stars.js';
 
 function statusClass(status) {
@@ -24,7 +24,7 @@ function setDragPayload(dataTransfer, payload) {
 }
 
 export function createGameView(container, engine, {
-  onBack, onLevels, onNextLevel, onSettings, onComingSoon, soundManager, settingsStore, progressStore,
+  onBack, onLevels, onNextLevel, onSettings, onStats, onComingSoon, soundManager, settingsStore, progressStore,
 }) {
   let unsubscribe = null;
   let wasWin = false;
@@ -94,15 +94,19 @@ export function createGameView(container, engine, {
     }
   }
 
-  function renderPoolNumbers(numbers, availableNumbers, selectedNumber) {
+  function renderPoolNumbers(pool, availableNumbers, selectedNumber, gridSize) {
+    const perRow = gridSize <= 3 ? 5 : gridSize <= 4 ? 8 : 9;
+    const rows = [];
+    for (let i = 0; i < pool.length; i += perRow) {
+      rows.push(pool.slice(i, i + perRow));
+    }
     const renderRow = (nums) => nums.map((num) => {
       const used = !availableNumbers.includes(num);
       const sel = selectedNumber === num;
       return `<button type="button" class="pool-number ${used ? 'used' : ''} ${sel ? 'selected' : ''}"
         data-number="${num}" draggable="${!used}" ${used ? 'disabled' : ''}>${num}</button>`;
     }).join('');
-    return `<div class="number-pool-row">${renderRow(numbers.pool.slice(0, 5))}</div>
-            <div class="number-pool-row">${renderRow(numbers.pool.slice(5))}</div>`;
+    return rows.map((nums) => `<div class="number-pool-row">${renderRow(nums)}</div>`).join('');
   }
 
   function showVictoryModal() {
@@ -112,12 +116,19 @@ export function createGameView(container, engine, {
       time: elapsed,
       hintsUsed: engine.hintsUsed,
       errorsCount: engine.errorsCount,
+      gridSize: engine.currentLevel?.gridSize ?? 3,
     });
     progressStore.completeLevel(levelId, {
       time: elapsed,
       hintsUsed: engine.hintsUsed,
+      errorsCount: engine.errorsCount,
       stars,
     });
+
+    const newAchievements = progressStore.consumePendingAchievements();
+    const achMsg = newAchievements.length
+      ? `<p class="victory-achievement">🏆 ${newAchievements.map((a) => a.title).join(', ')}</p>`
+      : '';
 
     victoryOverlay = document.createElement('div');
     victoryOverlay.className = 'victory-overlay';
@@ -127,6 +138,7 @@ export function createGameView(container, engine, {
         <div class="victory-icon">🏆</div>
         <h2>${UI_LABELS.game.victoryShort}</h2>
         <p class="victory-msg">${UI_LABELS.game.victory}</p>
+        ${achMsg}
         <div class="victory-stars-earned">${renderEarnedStars(stars, { maxDisplay: 3, className: 'victory-star' })}</div>
         <div class="victory-stats">
           <div><span>${UI_LABELS.game.time}</span><strong>${formatTime(elapsed)}</strong></div>
@@ -158,8 +170,10 @@ export function createGameView(container, engine, {
   }
 
   function render(state) {
-    const { board, selectedNumber, availableNumbers, validation, hintsRemaining, canUndo, hasError } = state;
-    const { targetSum, numbers, winConditions, title } = GAME_DEFINITION;
+    const { board, selectedNumber, availableNumbers, validation, hintsRemaining, canUndo, gridConfig, hasError } = state;
+    const { targetSum, winConditions, numbers } = gridConfig;
+    const { title } = GAME_DEFINITION;
+    const gridSize = board.length;
     const { isWin } = validation;
     const levelName = engine.currentLevel?.name ?? UI_LABELS.game.level ?? 'Nível 1';
     const levelTitle = engine.currentLevel?.title ?? '';
@@ -185,7 +199,7 @@ export function createGameView(container, engine, {
     wasError = state.hasError;
 
     container.innerHTML = `
-      <div class="game-screen ${isWin ? 'game-screen--won' : ''}">
+      <div class="game-screen game-screen--grid-${gridSize} ${isWin ? 'game-screen--won' : ''}">
         <header class="game-header">
           <button type="button" class="header-btn header-btn--back" data-action="back">←</button>
           <span class="game-level">${levelName}${levelTitle ? ` — ${levelTitle}` : ''}</span>
@@ -203,11 +217,11 @@ export function createGameView(container, engine, {
             <div class="title-spark title-spark--right" aria-hidden="true"></div>
           </header>
 
-          <div class="instruction-banner"><p>${GAME_RULES.summary}</p></div>
+          <div class="instruction-banner"><p>${levelObjective || `Complete o quadrado ${engine.currentLevel?.gridLabel ?? '3×3'} com soma ${targetSum}.`}</p></div>
 
           <div class="game-play-area">
             <div class="grid-wrapper">
-              <div class="magic-grid ${isWin ? 'magic-grid--won' : ''}" role="grid">
+              <div class="magic-grid magic-grid--size-${gridSize} ${isWin ? 'magic-grid--won' : ''}" role="grid" style="--grid-cells: ${gridSize}">
                 ${board.map((row, r) => row.map((cell, c) => {
                   const locked = isLocked(state, r, c);
                   return `<button type="button"
@@ -245,7 +259,7 @@ export function createGameView(container, engine, {
 
           <section class="number-pool-section">
             <div class="number-pool" data-drop-zone="pool">
-              ${renderPoolNumbers(numbers, availableNumbers, selectedNumber)}
+              ${renderPoolNumbers(numbers, availableNumbers, selectedNumber, gridSize)}
             </div>
           </section>
 
@@ -360,7 +374,7 @@ export function createGameView(container, engine, {
         else if (action === 'restart') requestRestart();
         else if (action === 'undo') engine.undo();
         else if (action === 'levels') onLevels();
-        else if (action === 'stats') onComingSoon();
+        else if (action === 'stats') onStats();
         else if (action === 'settings') onSettings();
         else if (action === 'exit') onBack();
       });
@@ -483,6 +497,7 @@ export function createGameView(container, engine, {
   return {
     startLevel(levelId) {
       engine.loadLevel(getLevel(levelId));
+      progressStore.recordGameStart();
       wasWin = false;
       wasGameOver = false;
       wasError = false;

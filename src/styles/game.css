@@ -156,7 +156,7 @@
 
 .magic-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(var(--grid-cells, 3), 1fr);
   border: 3px solid var(--navy);
   border-radius: var(--radius-sm);
   background: var(--navy);
@@ -203,6 +203,29 @@
 }
 
 .magic-grid--won .grid-cell { background: var(--green-light); color: var(--navy); }
+
+/* Tamanhos de grelha superiores */
+.magic-grid--size-4 {
+  --game-grid-size: min(calc(100vw - 2rem), 300px);
+}
+
+.magic-grid--size-5 {
+  --game-grid-size: min(calc(100vw - 1.5rem), 320px);
+}
+
+.game-screen--grid-4 .grid-cell,
+.game-screen--grid-5 .grid-cell {
+  font-size: clamp(0.85rem, calc(var(--game-grid-size) / var(--grid-cells, 3) / 1.8), 1.6rem);
+}
+
+.game-screen--grid-5 .pool-number {
+  font-size: clamp(0.75rem, calc(var(--game-pool-size) * 0.38), 1rem);
+}
+
+.game-screen--grid-4 .pool-number,
+.game-screen--grid-5 .pool-number {
+  --game-pool-size: clamp(36px, calc((100vw - 3rem) / 9.5), 44px);
+}
 
 /* Sidebar */
 .game-sidebar {

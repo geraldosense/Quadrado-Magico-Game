@@ -5,105 +5,135 @@
   padding-bottom: 5rem;
 }
 
-.levels-list {
-  padding: 1rem;
+.levels-summary {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
 }
 
-.level-card {
+.world-tabs {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 1rem 0.75rem;
+  overflow-x: auto;
+}
+
+.world-tab {
+  flex: 1;
+  min-width: 90px;
+  border: 2px solid #e0e6ef;
   background: white;
   border-radius: var(--radius-md);
-  padding: 1rem 1.1rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid #e8edf3;
+  padding: 0.65rem 0.5rem;
+  cursor: pointer;
+  font-family: var(--font-family);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  transition: all var(--transition);
 }
 
-.level-card--locked { opacity: 0.55; }
+.world-tab.active {
+  border-color: var(--navy);
+  background: var(--blue-light);
+}
 
-.level-card-name {
+.world-tab--bronze.active { border-color: #cd7f32; background: #fdf3e7; }
+.world-tab--silver.active { border-color: #9aa5b1; background: #f0f3f6; }
+.world-tab--gold.active { border-color: #d4a017; background: #fef9e7; }
+
+.world-tab-label {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: var(--navy);
+}
+
+.world-tab-progress {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.world-panel {
+  padding: 0 1rem 1rem;
+}
+
+.world-panel.hidden { display: none; }
+
+.world-panel-header {
+  margin-bottom: 0.75rem;
+}
+
+.world-panel-header h2 {
   font-size: 1rem;
   font-weight: 900;
   color: var(--navy);
 }
 
-.level-card-meta {
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
-  font-weight: 600;
-  margin: 0.15rem 0 0.25rem;
-}
-
-.level-card-objective {
+.world-panel-header p {
   font-size: 0.75rem;
   color: var(--color-text-muted);
-  line-height: 1.35;
-  margin: 0 0 0.35rem;
+  margin-top: 0.15rem;
 }
 
-.level-card-stars {
-  display: flex;
-  align-items: center;
-  gap: 0.1rem;
-  min-height: 1.2rem;
+.world-panel--bronze .world-panel-header h2 { color: #8b5a2b; }
+.world-panel--silver .world-panel-header h2 { color: #5a6a7e; }
+.world-panel--gold .world-panel-header h2 { color: #9a7b0a; }
+
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  gap: 0.45rem;
 }
 
-.level-star {
-  color: #ddd;
-  font-size: 0.95rem;
-}
-
-.level-star--filled {
-  color: var(--yellow-spark);
-  font-size: 1rem;
-}
-
-.level-card-stars .stars-none {
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-}
-
-.level-card-action {
+.level-chip {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 0.35rem;
-}
-
-.level-play-btn {
-  border: none;
-  background: var(--navy);
-  color: white;
-  font-family: var(--font-family);
-  font-size: 0.78rem;
-  font-weight: 800;
-  padding: 0.5rem 1rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  min-height: 56px;
+  border: 2px solid #e0e6ef;
   border-radius: var(--radius-sm);
+  background: white;
   cursor: pointer;
-  letter-spacing: 0.04em;
+  font-family: var(--font-family);
+  padding: 0.35rem 0.25rem;
+  transition: transform 0.12s ease;
 }
 
-.level-play-btn--small {
-  padding: 0.35rem 0.75rem;
-  font-size: 0.72rem;
-  background: var(--blue-light);
+.level-chip:not(:disabled):hover { transform: scale(1.05); }
+
+.level-chip--bronze:not(:disabled) { border-color: #e8c9a0; }
+.level-chip--silver:not(:disabled) { border-color: #c5cdd6; }
+.level-chip--gold:not(:disabled) { border-color: #e8d48b; }
+
+.level-chip--done {
+  background: var(--green-light);
+  border-color: var(--green-ok);
+}
+
+.level-chip--locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.level-chip-num {
+  font-size: 0.85rem;
+  font-weight: 900;
   color: var(--navy);
 }
 
-.level-badge {
-  font-size: 0.72rem;
-  font-weight: 800;
-  padding: 0.4rem 0.75rem;
-  border-radius: var(--radius-sm);
+.level-chip-stars {
+  font-size: 0.55rem;
+  color: var(--yellow-spark);
+  letter-spacing: -0.05em;
 }
 
-.level-badge--done {
-  background: var(--green-light);
-  color: var(--green-ok);
+.level-chip--locked .level-chip-stars {
+  font-size: 0.7rem;
 }
-
-.level-lock { font-size: 1.4rem; }
