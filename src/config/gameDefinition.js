@@ -10,12 +10,20 @@ export const APP_INFO = {
 };
 
 export const CREDITS = {
+  teamIntro:
+    'O Quadrado Mágico é um projecto educativo desenvolvido em Angola, resultante da parceria entre a visão pedagógica original e a implementação digital. Conheça quem concebeu, desenvolveu e deu forma a esta experiência de aprendizagem.',
   developer: {
-    role: 'Desenvolvedor',
+    role: 'Desenvolvimento',
+    title: 'Programador · Designer de Interface · Áudio',
     name: 'Geraldo de Assunção Simba Sense',
     shortName: 'Geraldo Sense',
     description:
-      'Responsável pelo desenvolvimento, programação e design técnico desta aplicação educativa.',
+      'Responsável pela concepção técnica, programação e experiência completa do jogo — desde a arquitectura dos 150 níveis até ao design visual, sons e jogabilidade em dispositivos móveis.',
+    contributions: [
+      'Desenvolvimento integral da aplicação web',
+      'Sistema de níveis, estatísticas e conquistas',
+      'Interface, música, efeitos sonoros e optimização mobile',
+    ],
     photos: [
       {
         src: 'assets/team/geraldo-sense-2.png',
@@ -24,35 +32,50 @@ export const CREDITS = {
       },
       {
         src: 'assets/team/geraldo-sense-1.png',
-        alt: 'Geraldo Sense — desenvolvedor',
-        variant: 'accent',
+        alt: 'Geraldo Sense — desenvolvedor do projecto',
+        variant: 'secondary',
       },
     ],
   },
   ideaProvider: {
-    role: 'Provedor da Ideia',
+    role: 'Concepção',
+    title: 'Autor da Ideia Original · Orientação Pedagógica',
     name: 'José Banganga Brás António',
-    shortName: 'José Banganga Brás António',
+    shortName: 'José Banganga',
     description:
-      'Autor original da ideia deste quebra-cabeça três vezes três e do conceito pedagógico.',
+      'Autor original do conceito deste quebra-cabeça matemático e da abordagem pedagógica que o sustenta. A sua ideia de usar o quadrado mágico como ferramenta de raciocínio lógico deu origem a todo o projecto.',
+    contributions: [
+      'Ideia original do puzzle três vezes três',
+      'Fundamentação pedagógica e objectivos de aprendizagem',
+      'Inspiração para a evolução do jogo educativo',
+    ],
     photos: [
       {
         src: 'assets/team/jose-banganga.png',
-        alt: 'José Banganga Brás António — provedor da ideia',
+        alt: 'José Banganga Brás António — autor da ideia original',
         variant: 'main',
       },
     ],
   },
   aboutSections: [
     {
-      title: 'Sobre o Jogo',
+      title: 'Sobre o Projecto',
       content:
-        'O Quadrado Mágico é um puzzle de lógica matemática com 150 níveis em três mundos: 3×3, 4×4 e 5×5. Preencha cada grelha sem repetir números, de forma que a soma de cada linha, coluna e diagonal seja sempre igual ao alvo do nível.',
+        'O Quadrado Mágico é uma aplicação educativa gratuita que desafia o jogador a completar grelhas numéricas em três dimensões — 3×3, 4×4 e 5×5 — totalizando 150 níveis progressivos. Cada puzzle exige lógica, cálculo mental e estratégia, sem repetir números e respeitando a soma mágica de cada linha, coluna e diagonal.',
     },
     {
       title: 'Objectivo Pedagógico',
+      items: [
+        'Desenvolver o raciocínio lógico e o pensamento matemático',
+        'Reforçar o cálculo mental de forma lúdica e progressiva',
+        'Estimular a resolução de problemas com autonomia e persistência',
+        'Promover o aprendizagem através de desafios graduados e recompensas',
+      ],
+    },
+    {
+      title: 'Origem do Jogo',
       content:
-        'Desenvolver o raciocínio lógico, o cálculo mental e a capacidade de resolver problemas matemáticos de forma divertida.',
+        'Este projecto nasceu da ideia de transformar um exercício clássico de matemática — o quadrado mágico — num jogo digital acessível, envolvente e adaptado ao contexto educativo angolano. A visão pedagógica de José Banganga Brás António foi materializada por Geraldo Sense numa experiência interactiva completa, com níveis, estatísticas, conquistas e interface optimizada para telemóvel.',
     },
   ],
 };
@@ -209,7 +232,9 @@ export const UI_LABELS = {
   },
   info: {
     title: 'INFORMAÇÃO',
-    credits: 'Créditos',
+    credits: 'A Nossa Equipa',
+    teamSubtitle: 'Quem está por trás do projecto',
+    contributions: 'Contribuições',
     back: '←',
   },
   howToPlay: {

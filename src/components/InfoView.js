@@ -1,42 +1,67 @@
 import { APP_INFO, CREDITS, GAME_DEFINITION, UI_LABELS } from '../config/gameDefinition.js';
 
-function renderTeamPhotos(photos) {
+function renderTeamPortrait(photos) {
   if (!photos?.length) return '';
 
-  const main = photos.find((p) => p.variant === 'main') ?? photos[0];
-  const accent = photos.find((p) => p.variant === 'accent');
-
-  if (accent) {
+  if (photos.length >= 2) {
     return `
-      <div class="team-photos team-photos--duo">
-        <figure class="team-photo team-photo--main">
-          <img src="${main.src}" alt="${main.alt}" loading="lazy" decoding="async" />
-        </figure>
-        <figure class="team-photo team-photo--accent" aria-hidden="true">
-          <img src="${accent.src}" alt="" loading="lazy" decoding="async" />
-        </figure>
-      </div>
-    `;
+      <div class="team-portrait team-portrait--dual">
+        ${photos.map((photo, i) => `
+          <figure class="team-portrait__frame ${i === 0 ? 'team-portrait__frame--primary' : 'team-portrait__frame--secondary'}">
+            <img src="${photo.src}" alt="${photo.alt}" loading="lazy" decoding="async" />
+          </figure>
+        `).join('')}
+      </div>`;
   }
 
+  const photo = photos[0];
   return `
-    <figure class="team-photos team-photos--single">
-      <img src="${main.src}" alt="${main.alt}" loading="lazy" decoding="async" />
-    </figure>
-  `;
+    <div class="team-portrait team-portrait--single">
+      <figure class="team-portrait__frame team-portrait__frame--primary">
+        <img src="${photo.src}" alt="${photo.alt}" loading="lazy" decoding="async" />
+      </figure>
+    </div>`;
 }
 
-function renderTeamCard(person, modifier) {
+function renderTeamProfile(person, variant) {
+  const contributions = person.contributions?.length
+    ? `<ul class="team-profile__contributions">
+        ${person.contributions.map((item) => `<li>${item}</li>`).join('')}
+      </ul>`
+    : '';
+
   return `
-    <article class="team-card team-card--${modifier}">
-      ${renderTeamPhotos(person.photos)}
-      <div class="team-body">
-        <span class="team-role">${person.role}</span>
-        <h3 class="team-name">${person.name}</h3>
-        <p class="team-bio">${person.description}</p>
+    <article class="team-profile team-profile--${variant}">
+      ${renderTeamPortrait(person.photos)}
+      <div class="team-profile__body">
+        <header class="team-profile__header">
+          <span class="team-profile__role">${person.role}</span>
+          <h3 class="team-profile__name">${person.name}</h3>
+          <p class="team-profile__title">${person.title}</p>
+        </header>
+        <p class="team-profile__bio">${person.description}</p>
+        ${contributions ? `
+          <div class="team-profile__contribs">
+            <span class="team-profile__contribs-label">${UI_LABELS.info.contributions}</span>
+            ${contributions}
+          </div>` : ''}
       </div>
-    </article>
-  `;
+    </article>`;
+}
+
+function renderAboutSection(section) {
+  if (section.items) {
+    return `
+      <section class="info-card info-card--list">
+        <h3>${section.title}</h3>
+        <ul>${section.items.map((item) => `<li>${item}</li>`).join('')}</ul>
+      </section>`;
+  }
+  return `
+    <section class="info-card">
+      <h3>${section.title}</h3>
+      <p>${section.content}</p>
+    </section>`;
 }
 
 export function renderInfoView(container, { onBack }) {
@@ -61,21 +86,26 @@ export function renderInfoView(container, { onBack }) {
         </section>
 
         <section class="info-section info-section--team">
-          <h2>${UI_LABELS.info.credits}</h2>
-          <div class="team-grid">
-            ${renderTeamCard(CREDITS.developer, 'developer')}
-            ${renderTeamCard(CREDITS.ideaProvider, 'idea')}
+          <header class="team-section-header">
+            <span class="team-section-eyebrow">${UI_LABELS.info.teamSubtitle}</span>
+            <h2>${UI_LABELS.info.credits}</h2>
+            <p class="team-section-intro">${CREDITS.teamIntro}</p>
+          </header>
+          <div class="team-list">
+            ${renderTeamProfile(CREDITS.ideaProvider, 'conception')}
+            ${renderTeamProfile(CREDITS.developer, 'development')}
           </div>
         </section>
 
-        ${CREDITS.aboutSections.map((s) =>
-          s.items
-            ? `<section class="info-card"><h3>${s.title}</h3><ul>${s.items.map((i) => `<li>${i}</li>`).join('')}</ul></section>`
-            : `<section class="info-card"><h3>${s.title}</h3><p>${s.content}</p></section>`
-        ).join('')}
+        <section class="info-section info-section--about">
+          <h2 class="info-section-title">Sobre o Jogo</h2>
+          ${CREDITS.aboutSections.map(renderAboutSection).join('')}
+        </section>
 
         <footer class="info-footer">
-          <p>${GAME_DEFINITION.title} — ${APP_INFO.subtitle}</p>
+          <p class="info-footer__brand">${GAME_DEFINITION.title}</p>
+          <p class="info-footer__tagline">${APP_INFO.subtitle}</p>
+          <p class="info-footer__copy">© ${APP_INFO.year} · Projecto educativo angolano</p>
         </footer>
       </div>
     </div>

@@ -533,20 +533,43 @@
     max-width: 720px;
   }
 
-  .team-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+  .team-profile {
+    flex-direction: row;
     align-items: stretch;
   }
 
-  .team-photos--duo {
-    aspect-ratio: 4 / 5;
+  .team-portrait {
+    flex: 0 0 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1rem;
   }
 
-  .team-photo--accent {
-    width: 4.75rem;
-    height: 4.75rem;
+  .team-portrait--single .team-portrait__frame {
+    max-width: none;
+    height: 100%;
+    min-height: 260px;
+  }
+
+  .team-portrait--dual {
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr;
+    height: 100%;
+    min-height: 280px;
+  }
+
+  .team-portrait--dual .team-portrait__frame {
+    aspect-ratio: auto;
+    min-height: 0;
+  }
+
+  .team-profile__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.35rem 1.5rem;
   }
 }
 
