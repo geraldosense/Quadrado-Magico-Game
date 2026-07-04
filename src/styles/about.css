@@ -1,0 +1,222 @@
+.info-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-bg);
+  padding-bottom: 2rem;
+}
+
+.info-content {
+  padding: 1rem;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.info-hero {
+  text-align: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, var(--navy-dark), var(--navy-mid));
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.25rem;
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.info-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.info-logo span {
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  opacity: 0.9;
+}
+
+.info-logo strong {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--orange-magic);
+}
+
+.info-tagline {
+  margin-top: 0.75rem;
+  font-size: 0.88rem;
+  opacity: 0.92;
+  line-height: 1.5;
+}
+
+.info-version {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  opacity: 0.65;
+}
+
+.info-section h2 {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--navy);
+  margin-bottom: 0.85rem;
+  border-bottom: 2px solid var(--yellow-spark);
+  padding-bottom: 0.4rem;
+}
+
+.info-section--team {
+  margin-bottom: 1rem;
+}
+
+.team-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.team-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(10, 35, 66, 0.06);
+}
+
+.team-card--developer {
+  border-top: 4px solid var(--navy);
+}
+
+.team-card--idea {
+  border-top: 4px solid var(--yellow-spark);
+}
+
+.team-photos--single {
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: linear-gradient(160deg, #eef2f7, #dfe6ef);
+}
+
+.team-photos--single img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.team-photos--duo {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 5 / 4;
+  overflow: hidden;
+  background: linear-gradient(160deg, #eef2f7, #dfe6ef);
+}
+
+.team-photo {
+  margin: 0;
+}
+
+.team-photo--main {
+  width: 100%;
+  height: 100%;
+}
+
+.team-photo--main img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 15%;
+  display: block;
+}
+
+.team-photo--accent {
+  position: absolute;
+  right: 0.85rem;
+  bottom: 0.85rem;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid white;
+  box-shadow: 0 4px 16px rgba(10, 35, 66, 0.22);
+}
+
+.team-photo--accent img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.team-body {
+  padding: 1.1rem 1.15rem 1.2rem;
+}
+
+.team-role {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: rgba(10, 35, 66, 0.06);
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+}
+
+.team-card--idea .team-role {
+  background: rgba(255, 193, 7, 0.18);
+  color: #8a6d00;
+}
+
+.team-name {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--navy);
+  margin: 0.55rem 0 0.45rem;
+  line-height: 1.3;
+}
+
+.team-bio {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.info-footer {
+  text-align: center;
+  padding: 1.5rem 0 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+/* Partilhado com info cards */
+.about-screen { padding-bottom: 2rem; }
+.about-content { padding: 0 1rem; }
+
+.credit-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 1.1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: var(--shadow-sm);
+  border-left: 5px solid var(--navy);
+}
+
+.credit-card--idea { border-left-color: var(--yellow-spark); }
+.credit-role { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--color-text-muted); }
+.credit-name { font-size: 1.05rem; font-weight: 900; color: var(--navy); margin: 0.25rem 0 0.5rem; }
+.credit-card p { font-size: 0.85rem; line-height: 1.55; }
+
+.info-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.info-card h3 { color: var(--navy); font-size: 0.95rem; margin-bottom: 0.5rem; font-weight: 800; }
+.info-card p, .info-card li { font-size: 0.85rem; line-height: 1.55; }
+.info-card ul { padding-left: 1.15rem; }

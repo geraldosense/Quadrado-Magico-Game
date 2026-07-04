@@ -1,0 +1,110 @@
+.howto-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-bg);
+}
+
+.howto-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 2rem;
+}
+
+.howto-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 1.1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.howto-card h2 {
+  color: var(--navy);
+  font-size: 0.95rem;
+  font-weight: 900;
+  margin-bottom: 0.5rem;
+}
+
+.howto-card p,
+.howto-card li {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.howto-card ul {
+  padding-left: 1.15rem;
+  margin-top: 0.35rem;
+}
+
+.howto-example {
+  background: var(--blue-banner);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  border: 1px solid #b8d4ef;
+}
+
+.howto-example-label {
+  display: inline-block;
+  background: var(--navy);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-xl);
+  margin-bottom: 0.75rem;
+}
+
+.howto-example-body {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.howto-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  gap: 2px;
+  background: var(--navy);
+  border: 2px solid var(--navy);
+  border-radius: var(--radius-sm);
+}
+
+.howto-grid-cell {
+  width: 44px;
+  height: 44px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.howto-checklist { flex: 1; min-width: 140px; }
+
+.howto-check {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--green-ok);
+  padding: 0.2rem 0;
+}
+
+.howto-play-btn {
+  width: 100%;
+  border: none;
+  background: var(--navy);
+  color: white;
+  font-family: var(--font-family);
+  font-size: 1rem;
+  font-weight: 800;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  letter-spacing: 0.03em;
+}
+
+.howto-play-btn:hover { background: var(--navy-mid); }

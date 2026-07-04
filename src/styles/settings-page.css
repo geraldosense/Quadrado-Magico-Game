@@ -1,0 +1,73 @@
+.settings-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-bg);
+}
+
+.settings-page-body {
+  padding: 0.5rem 0;
+}
+
+.settings-group {
+  background: white;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.settings-group-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+  padding: 0.75rem 1.25rem 0.35rem;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid #f0f2f5;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.settings-item:last-child { border-bottom: none; }
+
+.settings-item--slider {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.settings-item--slider label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.settings-value {
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.settings-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: white;
+  padding: 0.95rem 1.25rem;
+  font-family: var(--font-family);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--navy);
+  cursor: pointer;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.settings-link:hover { background: var(--blue-light); }
