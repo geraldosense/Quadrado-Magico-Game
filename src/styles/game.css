@@ -6,7 +6,8 @@
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--color-bg);
-  padding-bottom: 5rem;
+  padding-bottom: calc(var(--game-toolbar-h) + env(safe-area-inset-bottom, 0px));
+  overscroll-behavior: none;
 }
 
 /* Header com nível, timer e controlos */
@@ -28,12 +29,15 @@
   font-weight: 700;
   cursor: pointer;
   border-radius: var(--radius-sm);
-  width: 36px;
-  height: 36px;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background var(--transition);
+  flex-shrink: 0;
 }
 
 .header-btn:hover { background: rgba(255,255,255,0.22); }
@@ -41,8 +45,15 @@
 
 .game-level {
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 0.88rem;
   letter-spacing: 0.02em;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 0.35rem;
 }
 
 .game-header-right {
@@ -150,7 +161,8 @@
   border-radius: var(--radius-sm);
   background: var(--navy);
   gap: 2px;
-  width: min(100%, 220px);
+  width: var(--game-grid-size);
+  max-width: 100%;
   aspect-ratio: 1;
   overflow: hidden;
   transition: background var(--transition);
@@ -168,15 +180,19 @@
   background: white;
   border: none;
   font-family: var(--font-family);
-  font-size: clamp(1.5rem, 6vw, 2.25rem);
+  font-size: clamp(1.6rem, calc(var(--game-grid-size) / 3.8), 2.25rem);
   font-weight: 800;
   color: var(--color-text);
   cursor: pointer;
   aspect-ratio: 1;
   transition: background var(--transition);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .grid-cell:hover { background: var(--blue-light); }
+.grid-cell:active:not(.locked) { background: #c8ddf5; }
 .grid-cell.highlight { background: #dbeafe; outline: 2px dashed var(--navy-mid); outline-offset: -2px; }
 .grid-cell.filled { color: var(--navy); }
 .grid-cell.locked {
@@ -296,12 +312,14 @@
 .number-pool-row {
   display: flex;
   justify-content: center;
-  gap: 0.45rem;
+  gap: var(--game-pool-gap);
 }
 
 .pool-number {
-  width: 42px;
-  height: 42px;
+  width: var(--game-pool-size);
+  height: var(--game-pool-size);
+  min-width: var(--game-pool-size);
+  min-height: var(--game-pool-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -309,14 +327,18 @@
   border-radius: var(--radius-sm);
   background: white;
   font-family: var(--font-family);
-  font-size: 1.1rem;
+  font-size: clamp(1rem, calc(var(--game-pool-size) * 0.42), 1.3rem);
   font-weight: 800;
   color: var(--navy);
   cursor: pointer;
   transition: all var(--transition);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .pool-number:hover:not(:disabled) { transform: scale(1.06); background: var(--blue-light); border-style: solid; }
+.pool-number:active:not(:disabled) { transform: scale(0.95); }
 .pool-number.selected {
   background: var(--navy);
   color: white;
@@ -341,8 +363,8 @@
   z-index: 3000;
   pointer-events: none;
   transform: translate(-50%, -50%);
-  width: 48px;
-  height: 48px;
+  width: var(--game-pool-size);
+  height: var(--game-pool-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -350,7 +372,7 @@
   border-radius: var(--radius-sm);
   background: white;
   font-family: var(--font-family);
-  font-size: 1.4rem;
+  font-size: clamp(1rem, calc(var(--game-pool-size) * 0.42), 1.4rem);
   font-weight: 800;
   color: var(--navy);
   box-shadow: var(--shadow-md);
@@ -516,7 +538,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.1rem;
+  justify-content: center;
+  gap: 0.12rem;
   border: none;
   background: none;
   font-family: var(--font-family);
@@ -524,7 +547,8 @@
   font-weight: 700;
   color: var(--navy);
   cursor: pointer;
-  padding: 0.35rem 0.15rem;
+  padding: 0.4rem 0.15rem;
+  min-height: var(--touch-min);
   position: relative;
 }
 
@@ -639,18 +663,3 @@
   border: 2px solid var(--navy) !important;
 }
 
-@media (max-width: 480px) {
-  .game-play-area {
-    grid-template-columns: 1fr;
-    justify-items: center;
-  }
-  .game-sidebar {
-    max-width: 280px;
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .sidebar-panel { flex: 1; min-width: 130px; }
-  .magic-grid { width: min(100%, 260px); }
-}

@@ -29,10 +29,26 @@
   --shadow-md: 0 6px 24px rgba(10, 35, 66, 0.14);
   --shadow-card: 0 4px 20px rgba(10, 35, 66, 0.1);
   --transition: 0.2s ease;
+
+  /* Jogo — dimensionamento adaptativo */
+  --game-grid-size: min(calc(100vw - 2rem), 280px);
+  --game-pool-size: 42px;
+  --game-pool-gap: 0.45rem;
+  --game-toolbar-h: 3.75rem;
+  --touch-min: 44px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; }
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+button, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
 
 body {
   font-family: var(--font-family);
