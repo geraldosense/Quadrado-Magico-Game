@@ -82,7 +82,9 @@ export const GAME_RULES = {
   howToPlay: [
     'Selecione um número na barra inferior ou arraste-o para um quadrado vazio.',
     'Use cada número apenas uma vez.',
-    'Complete quando todas as linhas, colunas e diagonais somarem 15.',
+    'Tem no máximo 3 erros por jogo — ao terceiro erro, perde.',
+    'Cada nível permite no máximo 1 dica; níveis difíceis não têm dicas.',
+    'Complete quando todas as linhas, colunas e diagonais somarem o alvo.',
   ],
   tips: [
     'Use cada número apenas uma vez.',
@@ -176,7 +178,7 @@ export const UI_LABELS = {
   },
   progress: { title: 'PROGRESSO' },
   pool: {
-    hint: 'Use cada número apenas uma vez.',
+    hint: 'Máximo 3 erros por jogo. Use cada número apenas uma vez.',
   },
   game: {
     back: '←',
@@ -192,6 +194,10 @@ export const UI_LABELS = {
     tryAgain: 'JOGAR NOVAMENTE',
     gameOver: 'Fim de Jogo',
     gameOverMsg: 'O quadrado está incorreto. Verifique as somas das linhas, colunas e diagonais.',
+    gameOverErrors: 'Esgotou as 3 tentativas! Tente novamente com mais cuidado.',
+    errorsRemaining: 'Erros restantes',
+    noHints: 'Sem dicas neste nível',
+    blankLevel: 'Do zero',
     restartMatch: 'Reiniciar Encontro',
     confirmRestart: 'Tem certeza que deseja reiniciar este nível?',
     confirmYes: 'Sim, Reiniciar',

@@ -1,4 +1,4 @@
-import { getSolutionForLevel } from '../config/levels.js';
+import { getSolutionForLevel, MAX_ERRORS } from '../config/levels.js';
 import {
   createEmptyBoard,
   getGridConfig,
@@ -14,9 +14,10 @@ export class GameEngine {
     this.currentLevel = null;
     this.lockedCells = new Set();
     this.history = [];
-    this.hintsRemaining = 3;
+    this.hintsRemaining = 1;
     this.hintsUsed = 0;
     this.errorsCount = 0;
+    this.maxErrors = MAX_ERRORS;
     this.hadError = false;
     this.reset();
   }
@@ -30,9 +31,10 @@ export class GameEngine {
     this.selectedNumber = null;
     this.lockedCells = new Set();
     this.history = [];
-    this.hintsRemaining = 3;
+    this.hintsRemaining = 1;
     this.hintsUsed = 0;
     this.errorsCount = 0;
+    this.maxErrors = MAX_ERRORS;
     this.hadError = false;
     this.currentLevel = null;
     this.validation = validateBoard(this.board, null);
@@ -50,9 +52,10 @@ export class GameEngine {
     );
     this.selectedNumber = null;
     this.history = [];
-    this.hintsRemaining = level.hintsMax ?? 3;
+    this.hintsRemaining = level.hintsMax ?? 1;
     this.hintsUsed = 0;
     this.errorsCount = 0;
+    this.maxErrors = level.maxErrors ?? MAX_ERRORS;
     this.hadError = false;
     this.validation = validateBoard(this.board, level);
     this.notify();
@@ -81,7 +84,10 @@ export class GameEngine {
       lockedCells: [...this.lockedCells],
       hintsRemaining: this.hintsRemaining,
       hintsUsed: this.hintsUsed,
+      hintsMax: this.currentLevel?.hintsMax ?? 1,
       errorsCount: this.errorsCount,
+      errorsRemaining: Math.max(0, this.maxErrors - this.errorsCount),
+      maxErrors: this.maxErrors,
       currentLevel: this.currentLevel,
       gridConfig: config,
       canUndo: this.history.length > 0,
@@ -247,9 +253,18 @@ export class GameEngine {
   }
 
   isGameOver(showErrors) {
-    if (!showErrors || this.validation.isWin) return false;
+    if (this.validation.isWin) return false;
+    if (this.errorsCount >= this.maxErrors) return true;
+    if (!showErrors) return false;
     if (this.validation.isComplete && !this.validation.isWin) return true;
     if (hasDuplicateNumbers(this.board)) return true;
     return false;
+  }
+
+  getGameOverReason() {
+    if (this.errorsCount >= this.maxErrors) return 'errors';
+    if (hasDuplicateNumbers(this.board)) return 'duplicate';
+    if (this.validation.isComplete && !this.validation.isWin) return 'invalid';
+    return 'unknown';
   }
 }

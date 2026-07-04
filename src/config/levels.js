@@ -7,6 +7,8 @@ import {
 } from './gridPresets.js';
 
 export const TOTAL_LEVELS = 150;
+export const MAX_ERRORS = 3;
+export const BLANK_START_RATIO = 0.15;
 
 const TITLES_3 = [
   'Primeiros Passos', 'O Centro Mágico', 'Diagonal Principal', 'Falta Um Número',
@@ -56,9 +58,14 @@ function clueCountForLevel(size, tierIndex, tierTotal) {
   return Math.max(minClues, Math.round(minClues + ratio * (maxClues - minClues)));
 }
 
-function hintsForLevel(tierIndex, size) {
-  const base = size === 3 ? 3 : size === 4 ? 2 : 1;
-  return Math.max(1, base - Math.floor((tierIndex - 1) / 15));
+function isBlankStart(id) {
+  return (id * 17 + 3) % 100 < Math.round(BLANK_START_RATIO * 100);
+}
+
+function hintsForLevel(tierIndex, tierTotal, difficulty) {
+  if (difficulty === 'Extremo') return 0;
+  if (difficulty === 'Difícil' && tierIndex > tierTotal * 0.55) return 0;
+  return 1;
 }
 
 function difficultyLabel(tierIndex, tierTotal) {
@@ -94,10 +101,13 @@ function createLevel(id) {
   const tierIndex = id - world.levelFrom + 1;
   const tierTotal = world.levelTo - world.levelFrom + 1;
   const solution = transformBoard(baseSolution, id - 1);
-  const clueCount = clueCountForLevel(size, tierIndex, tierTotal);
-  const initialBoard = buildPuzzleBoard(solution, clueCount, id * 7919);
-  const hints = hintsForLevel(tierIndex, size);
+  const blankStart = isBlankStart(id);
   const diff = difficultyLabel(tierIndex, tierTotal);
+  const clueCount = blankStart ? 0 : clueCountForLevel(size, tierIndex, tierTotal);
+  const initialBoard = blankStart
+    ? Array.from({ length: size }, () => Array(size).fill(null))
+    : buildPuzzleBoard(solution, clueCount, id * 7919);
+  const hints = hintsForLevel(tierIndex, tierTotal, diff);
 
   return {
     id,
@@ -108,12 +118,16 @@ function createLevel(id) {
     gridSize: size,
     cardTier: world.cardTier,
     worldId: world.id,
-    objective: `Complete o quadrado ${world.gridLabel}. Cada linha, coluna e diagonal deve somar ${targetSum}.`,
+    blankStart,
+    objective: blankStart
+      ? `Tabuleiro vazio! Comece do zero e complete o quadrado ${world.gridLabel} (soma ${targetSum}).`
+      : `Complete o quadrado ${world.gridLabel}. Cada linha, coluna e diagonal deve somar ${targetSum}.`,
     initialBoard,
     solution,
     lockedCells: lockedFromBoard(initialBoard),
     clues: countClues(initialBoard),
     hintsMax: hints,
+    maxErrors: MAX_ERRORS,
     gridConfig: {
       rows: size,
       cols: size,

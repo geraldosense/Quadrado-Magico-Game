@@ -56,10 +56,22 @@
   padding: 0 0.35rem;
 }
 
+.game-lives {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.life-icon--lost {
+  opacity: 0.55;
+}
+
 .game-header-right {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .game-timer {

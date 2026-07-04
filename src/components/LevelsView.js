@@ -11,12 +11,12 @@ function renderLevelChip(level, progress) {
 
   return `
     <button type="button"
-      class="level-chip level-chip--${level.cardTier} ${!unlocked ? 'level-chip--locked' : ''} ${completed ? 'level-chip--done' : ''}"
+      class="level-chip level-chip--${level.cardTier} ${!unlocked ? 'level-chip--locked' : ''} ${completed ? 'level-chip--done' : ''} ${level.blankStart ? 'level-chip--blank' : ''}"
       data-level="${level.id}"
       ${!unlocked ? 'disabled aria-label="Bloqueado"' : ''}
-      aria-label="Nível ${level.id}">
+      aria-label="Nível ${level.id}${level.blankStart ? ' — do zero' : ''}">
       <span class="level-chip-num">${level.id}</span>
-      <span class="level-chip-stars">${stars ? '★'.repeat(stars) : unlocked ? '○' : '🔒'}</span>
+      <span class="level-chip-stars">${stars ? '★'.repeat(stars) : unlocked ? (level.blankStart ? '∅' : '○') : '🔒'}</span>
     </button>`;
 }
 

@@ -134,6 +134,11 @@
   letter-spacing: -0.05em;
 }
 
-.level-chip--locked .level-chip-stars {
-  font-size: 0.7rem;
+.level-chip--blank:not(.level-chip--locked) {
+  border-style: dashed;
+}
+
+.level-chip--blank .level-chip-stars {
+  color: var(--navy-mid);
+  font-weight: 900;
 }

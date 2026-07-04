@@ -38,6 +38,7 @@ export function createGameView(container, engine, {
   let victoryOverlay = null;
   let wasGameOver = false;
   let wasError = false;
+  let lastErrorsCount = 0;
 
   function startTimer() {
     stopTimer();
@@ -170,7 +171,10 @@ export function createGameView(container, engine, {
   }
 
   function render(state) {
-    const { board, selectedNumber, availableNumbers, validation, hintsRemaining, canUndo, gridConfig, hasError } = state;
+    const {
+      board, selectedNumber, availableNumbers, validation, hintsRemaining, hintsMax,
+      canUndo, gridConfig, hasError, errorsCount, errorsRemaining, maxErrors,
+    } = state;
     const { targetSum, winConditions, numbers } = gridConfig;
     const { title } = GAME_DEFINITION;
     const gridSize = board.length;
@@ -193,10 +197,24 @@ export function createGameView(container, engine, {
     wasGameOver = shouldGameOver;
     showGameOver = shouldGameOver;
 
-    if (state.hasError && !wasError && settings.showErrors) {
+    if (errorsCount > lastErrorsCount) {
       soundManager?.playError();
     }
+    lastErrorsCount = errorsCount;
+
+    if (state.hasError && !wasError && settings.showErrors) {
+      // feedback visual adicional quando configurado
+    }
     wasError = state.hasError;
+
+    const gameOverReason = engine.getGameOverReason();
+    const gameOverMsg = gameOverReason === 'errors'
+      ? UI_LABELS.game.gameOverErrors
+      : UI_LABELS.game.gameOverMsg;
+
+    const livesHtml = Array.from({ length: maxErrors }, (_, i) =>
+      `<span class="life-icon ${i < errorsRemaining ? 'life-icon--full' : 'life-icon--lost'}" aria-hidden="true">${i < errorsRemaining ? '❤️' : '🖤'}</span>`
+    ).join('');
 
     container.innerHTML = `
       <div class="game-screen game-screen--grid-${gridSize} ${isWin ? 'game-screen--won' : ''}">
@@ -204,7 +222,8 @@ export function createGameView(container, engine, {
           <button type="button" class="header-btn header-btn--back" data-action="back">←</button>
           <span class="game-level">${levelName}${levelTitle ? ` — ${levelTitle}` : ''}</span>
           <div class="game-header-right">
-            <button type="button" class="header-btn header-btn--hint" data-action="hint-top" aria-label="Dica">💡</button>
+            <span class="game-lives" aria-label="${errorsRemaining} ${UI_LABELS.game.errorsRemaining}">${livesHtml}</span>
+            ${hintsMax > 0 ? `<button type="button" class="header-btn header-btn--hint" data-action="hint-top" aria-label="Dica">💡</button>` : ''}
             <span class="game-timer" data-timer>${formatTime(elapsed)}</span>
             <button type="button" class="header-btn header-btn--pause" data-action="pause">${paused ? '▶' : '⏸'}</button>
           </div>
@@ -276,9 +295,9 @@ export function createGameView(container, engine, {
           <button type="button" class="toolbar-btn" data-action="restart">
             <span class="toolbar-icon">↻</span><span>${UI_LABELS.game.restart}</span>
           </button>
-          <button type="button" class="toolbar-btn toolbar-btn--hint" data-action="hint">
+          <button type="button" class="toolbar-btn toolbar-btn--hint" data-action="hint" ${hintsMax <= 0 || hintsRemaining <= 0 ? 'disabled' : ''}>
             <span class="toolbar-icon">💡</span><span>${UI_LABELS.game.hint}</span>
-            <span class="toolbar-badge">${hintsRemaining}</span>
+            ${hintsMax > 0 ? `<span class="toolbar-badge">${hintsRemaining}</span>` : ''}
           </button>
         </footer>
 
@@ -301,7 +320,7 @@ export function createGameView(container, engine, {
             <div class="overlay-menu-card overlay-menu-card--gameover">
               <div class="gameover-icon">😞</div>
               <h2>${UI_LABELS.game.gameOver}</h2>
-              <p>${UI_LABELS.game.gameOverMsg}</p>
+              <p>${gameOverMsg}</p>
               <button type="button" class="gameover-btn" data-action="gameover-restart">${UI_LABELS.game.restartMatch}</button>
             </div>
           </div>` : ''}
@@ -501,6 +520,7 @@ export function createGameView(container, engine, {
       wasWin = false;
       wasGameOver = false;
       wasError = false;
+      lastErrorsCount = 0;
       showPause = false;
       showGameOver = false;
       showConfirmRestart = false;
