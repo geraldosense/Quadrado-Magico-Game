@@ -183,6 +183,7 @@ export function createGameView(container, engine, {
     const levelTitle = engine.currentLevel?.title ?? '';
     const levelObjective = engine.currentLevel?.objective ?? '';
     const settings = settingsStore.get();
+    const effectiveHintsMax = settings.hintsEnabled ? hintsMax : 0;
 
     if (isWin && !wasWin) { showVictoryModal(); soundManager?.playWin(); stopTimer(); }
     if (!isWin && wasWin) hideVictoryModal();
@@ -199,6 +200,9 @@ export function createGameView(container, engine, {
 
     if (errorsCount > lastErrorsCount) {
       soundManager?.playError();
+      if (settings.vibrationEnabled && navigator.vibrate) {
+        navigator.vibrate(80);
+      }
     }
     lastErrorsCount = errorsCount;
 
@@ -223,8 +227,8 @@ export function createGameView(container, engine, {
           <span class="game-level">${levelName}${levelTitle ? ` — ${levelTitle}` : ''}</span>
           <div class="game-header-right">
             <span class="game-lives" aria-label="${errorsRemaining} ${UI_LABELS.game.errorsRemaining}">${livesHtml}</span>
-            ${hintsMax > 0 ? `<button type="button" class="header-btn header-btn--hint" data-action="hint-top" aria-label="Dica">💡</button>` : ''}
-            <span class="game-timer" data-timer>${formatTime(elapsed)}</span>
+            ${effectiveHintsMax > 0 ? `<button type="button" class="header-btn header-btn--hint" data-action="hint-top" aria-label="Dica">💡</button>` : ''}
+            ${settings.timerEnabled ? `<span class="game-timer" data-timer>${formatTime(elapsed)}</span>` : ''}
             <button type="button" class="header-btn header-btn--pause" data-action="pause">${paused ? '▶' : '⏸'}</button>
           </div>
         </header>
@@ -295,9 +299,9 @@ export function createGameView(container, engine, {
           <button type="button" class="toolbar-btn" data-action="restart">
             <span class="toolbar-icon">↻</span><span>${UI_LABELS.game.restart}</span>
           </button>
-          <button type="button" class="toolbar-btn toolbar-btn--hint" data-action="hint" ${hintsMax <= 0 || hintsRemaining <= 0 ? 'disabled' : ''}>
+          <button type="button" class="toolbar-btn toolbar-btn--hint" data-action="hint" ${effectiveHintsMax <= 0 || hintsRemaining <= 0 ? 'disabled' : ''}>
             <span class="toolbar-icon">💡</span><span>${UI_LABELS.game.hint}</span>
-            ${hintsMax > 0 ? `<span class="toolbar-badge">${hintsRemaining}</span>` : ''}
+            ${effectiveHintsMax > 0 ? `<span class="toolbar-badge">${hintsRemaining}</span>` : ''}
           </button>
         </footer>
 

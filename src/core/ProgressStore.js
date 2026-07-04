@@ -156,4 +156,16 @@ export class ProgressStore {
   notify() {
     this.listeners.forEach((cb) => cb(this.get()));
   }
+
+  reset() {
+    this.progress = {
+      score: 0,
+      unlockedLevel: 1,
+      completedLevels: {},
+      stats: { ...DEFAULTS.stats },
+      achievements: {},
+    };
+    this.save();
+    this.notify();
+  }
 }

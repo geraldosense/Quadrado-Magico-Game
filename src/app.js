@@ -90,10 +90,33 @@ class App {
       onBack: () => this.navigate('menu'),
       onPlay: () => this.startLevel(this.getPlayLevelId()),
     });
-    renderSettingsView(this.settingsContainer, this.settingsStore, {
+    renderSettingsView(this.settingsContainer, this.settingsStore, this.progressStore, {
       onBack: () => this.navigate('menu'),
       onHowToPlay: () => this.navigate('howto'),
+      onInfo: () => this.navigate('info'),
+      onStats: () => this.navigate('stats'),
+      onPreviewSound: () => this.soundManager.previewSounds(),
+      onShowText: (type) => this.showLegalModal(type),
+      onToast: (msg) => this.showToast(msg),
+      onDataCleared: () => this.refreshViews(),
     });
+  }
+
+  showLegalModal(type) {
+    const L = UI_LABELS.settings;
+    const title = type === 'privacy' ? L.privacyPolicy : L.termsOfUse;
+    const text = type === 'privacy' ? L.privacyText : L.termsText;
+    const overlay = document.createElement('div');
+    overlay.className = 'settings-legal-overlay';
+    overlay.innerHTML = `
+      <div class="settings-legal-modal">
+        <h3>${title}</h3>
+        <p>${text}</p>
+        <button type="button">OK</button>
+      </div>`;
+    overlay.querySelector('button').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
   }
 
   refreshViews() {
@@ -137,6 +160,19 @@ class App {
       el.classList.toggle('hidden', key !== view);
     });
     document.body.className = `view-${view}`;
+
+    if (view === 'settings') {
+      renderSettingsView(this.settingsContainer, this.settingsStore, this.progressStore, {
+        onBack: () => this.navigate('menu'),
+        onHowToPlay: () => this.navigate('howto'),
+        onInfo: () => this.navigate('info'),
+        onStats: () => this.navigate('stats'),
+        onPreviewSound: () => this.soundManager.previewSounds(),
+        onShowText: (type) => this.showLegalModal(type),
+        onToast: (msg) => this.showToast(msg),
+        onDataCleared: () => this.refreshViews(),
+      });
+    }
 
     if (view === 'play') {
       this.gameView.mount(levelId ?? this.currentLevelId);

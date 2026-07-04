@@ -35,13 +35,19 @@ export class SoundManager {
   }
 
   getVolume() {
-    const { soundEnabled, soundVolume } = this.settingsStore.get();
-    return soundEnabled ? soundVolume / 100 : 0;
+    const { soundEnabled, soundVolume, masterVolume = 100 } = this.settingsStore.get();
+    return soundEnabled ? (soundVolume / 100) * (masterVolume / 100) : 0;
   }
 
   getMusicVolume() {
-    const { musicEnabled, musicVolume } = this.settingsStore.get();
-    return musicEnabled ? (musicVolume / 100) * 0.18 : 0;
+    const { musicEnabled, musicVolume, masterVolume = 100 } = this.settingsStore.get();
+    return musicEnabled ? (musicVolume / 100) * (masterVolume / 100) * 0.18 : 0;
+  }
+
+  previewSounds() {
+    this.playSelect();
+    setTimeout(() => this.playPlace(), 200);
+    setTimeout(() => this.playWin(), 450);
   }
 
   playTone(freq, duration = 0.12, type = 'sine', volScale = 0.25) {
