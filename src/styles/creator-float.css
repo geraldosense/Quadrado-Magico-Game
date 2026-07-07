@@ -1,15 +1,16 @@
 .creator-float {
   position: fixed;
-  right: max(0.85rem, env(safe-area-inset-right));
-  bottom: max(1rem, env(safe-area-inset-bottom));
   z-index: 900;
   pointer-events: none;
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  transition: opacity 0.35s ease;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .creator-float.hidden {
   opacity: 0;
-  transform: translateY(12px) scale(0.92);
   pointer-events: none;
 }
 
@@ -17,17 +18,43 @@
   pointer-events: auto;
 }
 
-.creator-float__btn {
+body.creator-float-drag-lock {
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+.creator-float--draggable {
+  cursor: grab;
+}
+
+.creator-float--dragging {
+  cursor: grabbing;
+  z-index: 950;
+}
+
+.creator-float--dragging .creator-float__wrap {
+  animation: none;
+}
+
+.creator-float--dragging .creator-float__avatar {
+  transform: scale(1.04);
+  box-shadow: 0 8px 28px rgba(10, 35, 66, 0.35);
+}
+
+.creator-float .creator-float__btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.35rem;
   border: none;
   background: transparent;
-  padding: 0;
-  cursor: pointer;
+  padding: 0.35rem;
+  cursor: inherit;
   font-family: var(--font-family);
+  touch-action: none;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 .creator-float__wrap {
@@ -65,6 +92,21 @@
   object-fit: cover;
   display: block;
   border-radius: 50%;
+  pointer-events: none;
+}
+
+.creator-float__grip {
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  line-height: 1;
+  pointer-events: none;
+}
+
+body.view-loading .creator-float__grip {
+  color: rgba(10, 35, 66, 0.45);
+  text-shadow: none;
 }
 
 .creator-float__label {
@@ -87,24 +129,37 @@ body.view-loading .creator-float__label {
   border: 1px solid rgba(10, 35, 66, 0.12);
 }
 
-body.view-menu .creator-float {
-  bottom: max(5.75rem, calc(5.5rem + env(safe-area-inset-bottom)));
+.creator-float__hint {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.02em;
 }
 
-.creator-float__btn:hover .creator-float__avatar,
-.creator-float__btn:focus-visible .creator-float__avatar {
-  transform: scale(1.06);
-  box-shadow:
-    0 6px 22px rgba(10, 35, 66, 0.32),
-    0 0 0 2px var(--yellow-spark);
+body.view-loading .creator-float__hint {
+  color: var(--color-text-muted);
 }
 
-.creator-float__btn:focus-visible {
-  outline: none;
-}
+@media (max-width: 639px) {
+  .creator-float .creator-float__btn {
+    padding: 0.5rem;
+    min-width: var(--touch-min, 44px);
+  }
 
-.creator-float__btn:focus-visible .creator-float__avatar {
-  box-shadow: 0 6px 22px rgba(10, 35, 66, 0.32), 0 0 0 3px var(--yellow-spark);
+  .creator-float__wrap,
+  .creator-float__avatar {
+    width: 68px;
+    height: 68px;
+  }
+
+  .creator-float__grip {
+    font-size: 0.65rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .creator-float__hint {
+    font-size: 0.6rem;
+  }
 }
 
 @keyframes creator-float-bob {
@@ -127,6 +182,18 @@ body.view-menu .creator-float {
 body[data-animations="off"] .creator-float__wrap,
 body[data-animations="off"] .creator-float__pulse {
   animation: none;
+}
+
+@media (max-width: 380px) {
+  .creator-float__wrap,
+  .creator-float__avatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .creator-float__grip {
+    font-size: 0.6rem;
+  }
 }
 
 @media (min-width: 640px) {

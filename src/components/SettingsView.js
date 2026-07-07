@@ -1,6 +1,6 @@
 import { APP_INFO, GAME_DEFINITION, UI_LABELS } from '../config/gameDefinition.js';
 import { ACCENT_COLORS } from '../utils/settingsTheme.js';
-import { formatReviewDate, renderStarPicker, renderStarRow } from '../utils/reviewStars.js';
+import { formatReviewDateRelative, getAvatarInitials, avatarColor, renderStarPicker, renderStarRow } from '../utils/reviewStars.js';
 
 const SECTIONS = [
   { id: 'appearance', icon: '🎨', color: '#e8f0fa' },
@@ -23,7 +23,7 @@ export function renderSettingsView(container, settingsStore, progressStore, revi
     const reviewState = reviewsStore?.getState?.() ?? { reviews: [], stats: { count: 0, average: 0 }, ready: true };
 
     container.innerHTML = `
-      <div class="settings-page">
+      <div class="settings-page${section === 'reviews' ? ' settings-page--community' : ''}">
         ${renderHeader(section, L, () => {
           if (section === 'hub') callbacks.onBack();
           else { section = 'hub'; render(); }
@@ -121,100 +121,108 @@ export function renderSettingsView(container, settingsStore, progressStore, revi
   }
 
   function renderReviews(L, state) {
-    const { reviews, stats, remoteEnabled, syncing, savedAuthorName } = state;
+    const { reviews, stats, remoteEnabled, syncing, savedAuthorName, lastError } = state;
     const R = L.reviews;
+    const savedName = savedAuthorName.trim().toLowerCase();
 
-    const distBars = [5, 4, 3, 2, 1].map((stars) => {
-      const count = stats.distribution[stars - 1] ?? 0;
-      const pct = stats.count ? Math.round((count / stats.count) * 100) : 0;
-      return `
-        <div class="review-dist-row">
-          <span class="review-dist-label">${stars}★</span>
-          <span class="review-dist-bar"><span style="width:${pct}%"></span></span>
-          <span class="review-dist-count">${count}</span>
+    const feed = reviews.length
+      ? reviews.map((r) => {
+          const isMine = savedName && r.authorName?.trim().toLowerCase() === savedName;
+          const initials = getAvatarInitials(r.authorName);
+          const color = avatarColor(r.authorName);
+          return `
+            <article class="chat-msg ${isMine ? 'chat-msg--mine' : 'chat-msg--other'}" data-review-id="${escapeHtml(r.id ?? '')}">
+              ${!isMine ? `<span class="chat-msg__avatar" style="background:${color}" aria-hidden="true">${initials}</span>` : ''}
+              <div class="chat-msg__bubble">
+                <header class="chat-msg__head">
+                  <strong class="chat-msg__author">${escapeHtml(r.authorName)}</strong>
+                  <span class="chat-msg__stars" aria-label="${r.rating} de 5 estrelas">
+                    ${renderStarRow(r.rating, { className: 'chat-msg-star' })}
+                  </span>
+                </header>
+                <p class="chat-msg__text">${escapeHtml(r.comment)}</p>
+                ${r.improvements ? `
+                  <div class="chat-msg__extra">
+                    <span class="chat-msg__extra-label">${R.improvementsLabel}</span>
+                    <p>${escapeHtml(r.improvements)}</p>
+                  </div>` : ''}
+                <footer class="chat-msg__foot">
+                  <time datetime="${r.createdAt}">${formatReviewDateRelative(r.createdAt)}</time>
+                </footer>
+              </div>
+              ${isMine ? `<span class="chat-msg__avatar chat-msg__avatar--mine" style="background:${color}" aria-hidden="true">${initials}</span>` : ''}
+            </article>`;
+        }).join('')
+      : `<div class="chat-empty">
+          <span class="chat-empty__icon" aria-hidden="true">💬</span>
+          <p>${R.emptyList}</p>
         </div>`;
-    }).join('');
-
-    const list = reviews.length
-      ? reviews.map((r) => `
-          <article class="review-card">
-            <header class="review-card__header">
-              <div>
-                <strong class="review-card__author">${escapeHtml(r.authorName)}</strong>
-                <time class="review-card__date" datetime="${r.createdAt}">${formatReviewDate(r.createdAt)}</time>
-              </div>
-              <div class="review-card__stars" aria-label="${r.rating} de 5 estrelas">
-                ${renderStarRow(r.rating, { className: 'review-card-star' })}
-              </div>
-            </header>
-            <p class="review-card__comment">${escapeHtml(r.comment)}</p>
-            ${r.improvements ? `
-              <div class="review-card__improve">
-                <span class="review-card__improve-label">${R.improvementsLabel}</span>
-                <p>${escapeHtml(r.improvements)}</p>
-              </div>` : ''}
-          </article>`).join('')
-      : `<p class="review-empty">${R.emptyList}</p>`;
 
     return `
-      <section class="settings-card review-summary-card">
-        <div class="review-summary">
-          <div class="review-summary__score">
-            <span class="review-summary__average">${stats.average.toFixed(1)}</span>
-            <div class="review-summary__stars">${renderStarRow(stats.average, { className: 'review-summary-star' })}</div>
-            <span class="review-summary__count">${stats.count} ${R.totalReviews}</span>
+      <section class="community-panel">
+        <header class="community-header">
+          <div class="community-header__brand">
+            <span class="community-header__icon" aria-hidden="true">🎮</span>
+            <div>
+              <h3 class="community-header__title">${R.communityTitle}</h3>
+              <p class="community-header__status ${remoteEnabled ? 'is-online' : 'is-offline'}">
+                ${remoteEnabled ? R.communityOnline : R.communityOffline}
+                · ${stats.count} ${R.totalReviews}
+                · v${APP_INFO.version}
+              </p>
+            </div>
           </div>
-          <div class="review-summary__dist">${distBars}</div>
-        </div>
-        ${!remoteEnabled ? `<p class="review-sync-note">${R.localSyncNote}</p>` : ''}
-        ${syncing ? `<p class="review-sync-loading">${R.syncing}</p>` : ''}
-      </section>
-
-      <section class="settings-card review-form-card">
-        <h3 class="settings-card-title">${R.formTitle}</h3>
-        <p class="review-form-intro">${R.formIntro}</p>
-        <form class="review-form" data-review-form novalidate>
-          <label class="review-field">
-            <span class="review-field__label">${R.nameLabel} <em>*</em></span>
-            <input type="text" name="authorName" class="review-input" maxlength="48"
-              placeholder="${R.namePlaceholder}" value="${escapeHtml(savedAuthorName)}" required autocomplete="name" />
-            <small class="review-field__hint">${R.nameHint}</small>
-          </label>
-
-          <fieldset class="review-field review-field--stars">
-            <legend class="review-field__label">${R.ratingLabel} <em>*</em></legend>
-            ${renderStarPicker('reviewRating', reviewFormRating)}
-          </fieldset>
-
-          <label class="review-field">
-            <span class="review-field__label">${R.commentLabel} <em>*</em></span>
-            <textarea name="comment" class="review-textarea" rows="4" maxlength="600"
-              placeholder="${R.commentPlaceholder}" required></textarea>
-            <small class="review-field__hint">${R.commentHint}</small>
-          </label>
-
-          <label class="review-field">
-            <span class="review-field__label">${R.improvementsField}</span>
-            <textarea name="improvements" class="review-textarea" rows="3" maxlength="600"
-              placeholder="${R.improvementsPlaceholder}"></textarea>
-            <small class="review-field__hint">${R.improvementsHint}</small>
-          </label>
-
-          <button type="submit" class="review-submit-btn" ${reviewSubmitting ? 'disabled' : ''}>
-            ${reviewSubmitting ? R.submitting : R.submit}
+          <button type="button" class="community-refresh-btn" data-action="refresh-reviews" ${syncing ? 'disabled' : ''} aria-label="${R.refresh}">
+            ↻
           </button>
-        </form>
-      </section>
+        </header>
 
-      <section class="settings-card review-list-card">
-        <div class="review-list-header">
-          <h3 class="settings-card-title">${R.listTitle}</h3>
-          <button type="button" class="review-refresh-btn" data-action="refresh-reviews" ${syncing ? 'disabled' : ''}>
-            ↻ ${R.refresh}
-          </button>
+        ${lastError && !remoteEnabled ? `<p class="community-error">${R.syncError}</p>` : ''}
+        ${!remoteEnabled ? `<p class="community-error">${R.syncHint}</p>` : ''}
+
+        <div class="community-stats">
+          <div class="community-stats__score">
+            <span class="community-stats__value">${stats.average.toFixed(1)}</span>
+            <div class="community-stats__stars">${renderStarRow(stats.average, { className: 'community-star' })}</div>
+          </div>
+          <p class="community-stats__note">${R.communityIntro}</p>
         </div>
-        <p class="review-list-intro">${R.listIntro}</p>
-        <div class="review-list">${list}</div>
+
+        ${syncing ? `<p class="community-syncing">${R.syncing}</p>` : ''}
+
+        <div class="community-feed" data-community-feed role="log" aria-live="polite" aria-relevant="additions">
+          ${feed}
+        </div>
+
+        <div class="community-composer">
+          <form class="community-form" data-review-form novalidate>
+            <div class="community-form__row">
+              <input type="text" name="authorName" class="community-form__name" maxlength="48"
+                placeholder="${R.namePlaceholder}" value="${escapeHtml(savedAuthorName)}" required autocomplete="name" />
+              ${renderStarPicker('reviewRating', reviewFormRating)}
+            </div>
+
+            <div class="community-form__compose">
+              <textarea name="comment" class="community-form__input" rows="2" maxlength="600"
+                placeholder="${R.commentPlaceholder}" required data-char-target="comment-count"></textarea>
+              <button type="submit" class="community-form__send" ${reviewSubmitting ? 'disabled' : ''} aria-label="${R.submit}">
+                ${reviewSubmitting ? '…' : '➤'}
+              </button>
+            </div>
+
+            <div class="community-form__meta">
+              <span class="community-form__count" id="comment-count">0 / 600</span>
+              <button type="button" class="community-form__toggle" data-action="toggle-improvements">
+                ${R.improvementsToggle}
+              </button>
+            </div>
+
+            <div class="community-form__extra hidden" data-improvements-panel>
+              <textarea name="improvements" class="community-form__input community-form__input--extra" rows="2" maxlength="600"
+                placeholder="${R.improvementsPlaceholder}"></textarea>
+            </div>
+          </form>
+        </div>
       </section>`;
   }
 
@@ -456,24 +464,54 @@ export function renderSettingsView(container, settingsStore, progressStore, revi
       form.reset();
       const saved = reviewsStore.getSavedAuthorName();
       form.querySelector('[name="authorName"]').value = saved;
-      callbacks.onToast?.(result.offline ? UI_LABELS.settings.reviews.savedOffline : UI_LABELS.settings.reviews.saved);
+      form.querySelector('[data-improvements-panel]')?.classList.add('hidden');
+      callbacks.onToast?.(result.synced ? UI_LABELS.settings.reviews.saved : UI_LABELS.settings.reviews.savedOffline);
       render();
     });
 
-    container.querySelectorAll('.review-star-picker input[type="radio"]').forEach((input) => {
+    container.querySelector('[data-action="toggle-improvements"]')?.addEventListener('click', () => {
+      container.querySelector('[data-improvements-panel]')?.classList.toggle('hidden');
+    });
+
+    const commentInput = container.querySelector('.community-form__input[name="comment"]');
+    const commentCount = container.querySelector('#comment-count');
+    const updateCommentCount = () => {
+      if (commentCount && commentInput) {
+        commentCount.textContent = `${commentInput.value.length} / 600`;
+      }
+    };
+    commentInput?.addEventListener('input', updateCommentCount);
+    commentInput?.addEventListener('focus', () => {
+      requestAnimationFrame(() => {
+        commentInput.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      });
+    });
+    updateCommentCount();
+
+    container.querySelectorAll('.chat-star-picker input[type="radio"]').forEach((input) => {
       input.addEventListener('change', () => {
         reviewFormRating = +input.value;
-        container.querySelectorAll('.review-star-picker__icon').forEach((icon) => {
+        container.querySelectorAll('.chat-star-picker__icon').forEach((icon) => {
           icon.classList.toggle('active', +icon.dataset.value <= reviewFormRating);
         });
       });
     });
 
     if (reviewFormRating > 0) {
-      container.querySelectorAll('.review-star-picker__icon').forEach((icon) => {
+      container.querySelectorAll('.chat-star-picker__icon').forEach((icon) => {
         icon.classList.toggle('active', +icon.dataset.value <= reviewFormRating);
       });
     }
+
+    scrollCommunityFeedToBottom(container);
+  }
+
+  function scrollCommunityFeedToBottom(root) {
+    const feed = root.querySelector('[data-community-feed]');
+    if (!feed) return;
+    requestAnimationFrame(() => {
+      feed.scrollTop = feed.scrollHeight;
+    });
   }
 
   render();

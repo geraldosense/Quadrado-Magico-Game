@@ -107,6 +107,7 @@ body.view-loading {
   min-height: 100vh;
   min-height: 100dvh;
   position: relative;
+  overflow-x: hidden;
 }
 
 .view-panel { min-height: 100vh; min-height: 100dvh; animation: fadeIn 0.3s ease; }
@@ -156,7 +157,7 @@ body.view-loading {
 
 .toast {
   position: fixed;
-  bottom: 5rem;
+  bottom: max(5rem, calc(5rem + env(safe-area-inset-bottom, 0px)));
   left: 50%;
   transform: translateX(-50%) translateY(80px);
   background: var(--navy-dark);
@@ -169,6 +170,9 @@ body.view-loading {
   transition: all 0.3s ease;
   pointer-events: none;
   box-shadow: var(--shadow-md);
+  max-width: min(420px, calc(100vw - 2rem));
+  text-align: center;
+  line-height: 1.4;
 }
 
 .toast.visible {

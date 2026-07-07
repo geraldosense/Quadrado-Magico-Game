@@ -564,6 +564,266 @@
   }
 }
 
+/* --- Definições e Comunidade — todos os ecrãs --- */
+@media (max-width: 599px) {
+  .settings-hero {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-top: max(0.85rem, env(safe-area-inset-top));
+  }
+
+  .settings-hero-title {
+    font-size: 1.15rem;
+  }
+
+  .settings-hero-subtitle {
+    font-size: 0.78rem;
+    max-width: 280px;
+  }
+
+  .settings-page-body {
+    padding: 0.75rem;
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+
+  .settings-card {
+    padding: 0.85rem;
+  }
+
+  .community-header {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .community-header__title {
+    font-size: 0.88rem;
+  }
+
+  .community-header__status {
+    font-size: 0.62rem;
+  }
+
+  .community-stats {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+
+  .community-stats__score {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: left;
+  }
+
+  .community-stats__value {
+    font-size: 1.25rem;
+  }
+
+  .community-form__row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.55rem;
+  }
+
+  .chat-star-picker {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .chat-msg {
+    max-width: 94%;
+  }
+
+  .chat-msg__text {
+    font-size: 0.88rem;
+  }
+
+  body.view-settings .toast {
+    bottom: max(1.25rem, env(safe-area-inset-bottom));
+    max-width: calc(100vw - 2rem);
+    font-size: 0.82rem;
+    padding: 0.7rem 1rem;
+  }
+
+  .creator-float__hint {
+    display: none;
+  }
+
+  .stats-content,
+  .achievements-content,
+  .info-content {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  .stats-grid {
+    gap: 0.5rem;
+  }
+
+  .stat-card {
+    padding: 0.75rem 0.55rem;
+  }
+
+  .stat-card strong {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .settings-hero-title {
+    font-size: 1.05rem;
+  }
+
+  .community-header__icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .community-header__title {
+    font-size: 0.82rem;
+  }
+
+  .chat-msg__avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.55rem;
+  }
+
+  .chat-msg__bubble {
+    padding: 0.45rem 0.6rem;
+  }
+
+  .community-form__compose {
+    border-radius: 18px;
+    padding-left: 0.65rem;
+  }
+
+  .creator-float__label {
+    font-size: 0.58rem;
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (min-width: 600px) {
+  .settings-page--community .settings-page-body {
+    max-width: 640px;
+  }
+
+  .community-panel {
+    gap: 0.85rem;
+  }
+
+  .community-feed {
+    min-height: 280px;
+    max-height: min(50vh, 480px);
+    padding: 0.85rem 0.65rem;
+  }
+
+  .chat-msg {
+    max-width: 82%;
+  }
+
+  .community-header__title {
+    font-size: 1.05rem;
+  }
+
+  .community-form__row {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (min-width: 1024px) {
+  .settings-page--community .settings-page-body {
+    max-width: 720px;
+    padding: 1.25rem 1.5rem 1.5rem;
+  }
+
+  .settings-page {
+    border-radius: var(--radius-lg);
+  }
+
+  .community-panel {
+    gap: 1rem;
+  }
+
+  .community-feed {
+    min-height: 320px;
+    max-height: min(58vh, 560px);
+  }
+
+  .chat-msg {
+    max-width: 72%;
+  }
+
+  .chat-msg__text {
+    font-size: 0.9rem;
+  }
+
+  .community-form__compose {
+    padding: 0.45rem 0.45rem 0.45rem 1rem;
+  }
+
+  .community-stats {
+    padding: 0.85rem 1rem;
+  }
+
+  body.view-settings .toast {
+    bottom: 2.5rem;
+  }
+
+  .creator-float__hint {
+    display: block;
+  }
+}
+
+@media (min-width: 1280px) {
+  .settings-page--community .settings-page-body {
+    max-width: 780px;
+  }
+
+  .community-feed {
+    max-height: min(62vh, 600px);
+  }
+}
+
+/* Telemóvel horizontal — comunidade compacta */
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 899px) {
+  .settings-page--community .settings-hero {
+    padding-top: max(0.45rem, env(safe-area-inset-top));
+    padding-bottom: 0.65rem;
+  }
+
+  .settings-page--community .settings-hero-icon {
+    font-size: 1.5rem;
+  }
+
+  .settings-page--community .settings-hero-title {
+    font-size: 1rem;
+    margin-top: 0;
+  }
+
+  .settings-page--community .settings-hero-subtitle {
+    display: none;
+  }
+
+  .community-stats {
+    display: none;
+  }
+
+  .community-feed {
+    min-height: 100px;
+    max-height: calc(100dvh - 14rem);
+  }
+
+  .community-header {
+    padding: 0.55rem 0.75rem;
+  }
+}
+
 /* Preferência movimento reduzido */
 @media (prefers-reduced-motion: reduce) {
   .view-panel { animation: none; }

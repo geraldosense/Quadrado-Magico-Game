@@ -11,6 +11,7 @@ import { renderHowToPlayView } from './components/HowToPlayView.js';
 import { renderSettingsView } from './components/SettingsView.js';
 import { renderStatsView, renderAchievementsView } from './components/StatsView.js';
 import { createGameView } from './components/GameView.js';
+import { initCreatorFloatDrag } from './utils/creatorFloatDrag.js';
 import { ReviewsStore } from './core/ReviewsStore.js';
 import { CREATOR_FLOAT, UI_LABELS } from './config/gameDefinition.js';
 
@@ -74,19 +75,24 @@ class App {
 
     const { photo, name, fullName, label, photoPosition } = CREATOR_FLOAT;
     this.creatorFloatEl.innerHTML = `
-      <button type="button" class="creator-float__btn" data-action="creator-info"
-        aria-label="${fullName} — ${label}">
+      <div class="creator-float__btn" data-drag-handle tabindex="0"
+        role="button"
+        aria-label="${fullName} — ${label}. Toque para ver a equipa. Arraste para mover.">
+        <span class="creator-float__grip" aria-hidden="true">⋯⋯</span>
         <span class="creator-float__wrap">
           <span class="creator-float__pulse" aria-hidden="true"></span>
           <span class="creator-float__avatar">
-            <img src="${photo}" alt="${name}" style="object-position: ${photoPosition}" />
+            <img src="${photo}" alt="${name}" style="object-position: ${photoPosition}" draggable="false" />
           </span>
         </span>
         <span class="creator-float__label">${label}</span>
-      </button>`;
+        <span class="creator-float__hint">Arraste para mover</span>
+      </div>`;
 
-    this.creatorFloatEl.querySelector('[data-action="creator-info"]')?.addEventListener('click', () => {
-      if (this.menuReady) this.navigate('info');
+    initCreatorFloatDrag(this.creatorFloatEl, {
+      onTap: () => {
+        if (this.menuReady) this.navigate('info');
+      },
     });
   }
 
