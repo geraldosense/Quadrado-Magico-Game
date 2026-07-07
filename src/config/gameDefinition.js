@@ -3,57 +3,72 @@
  */
 
 export const APP_INFO = {
-  subtitle: 'Treine sua lógica e complete o quadrado mágico!',
+  subtitle: 'Treine a sua lógica e complete o quadrado mágico!',
   tagline: 'Puzzle matemático educativo',
-  version: '1.0.0',
+  version: '2.0.0',
   year: '2026',
+};
+
+export const CREATOR_FLOAT = {
+  photo: 'assets/team/geraldo-sense-2.png',
+  name: 'Geraldo Sense',
+  fullName: 'Geraldo de Assunção Simba Sense',
+  label: 'Criador do Jogo',
+  photoPosition: '50% 8%',
 };
 
 export const CREDITS = {
   teamIntro:
-    'O Quadrado Mágico é um projecto educativo desenvolvido em Angola, resultante da parceria entre a visão pedagógica original e a implementação digital. Conheça quem concebeu, desenvolveu e deu forma a esta experiência de aprendizagem.',
+    'O Quadrado Mágico é uma aplicação educativa angolana, criada por Geraldo de Assunção Simba Sense. O projecto nasceu após a resolução de um desafio matemático partilhado no WhatsApp — conheça abaixo o criador do jogo e o contexto que deu origem a esta experiência.',
   developer: {
-    role: 'Desenvolvimento',
-    title: 'Programador · Designer de Interface · Áudio',
+    role: 'Criador do Jogo',
+    title: 'Autor do Projecto · Programação · Design de Interface',
     name: 'Geraldo de Assunção Simba Sense',
     shortName: 'Geraldo Sense',
     description:
-      'Responsável pela concepção técnica, programação e experiência completa do jogo — desde a arquitectura dos 150 níveis até ao design visual, sons e jogabilidade em dispositivos móveis.',
+      'Autor conceptual, criador e desenvolvedor integral desta aplicação. Quando José Banganga publicou no WhatsApp um desafio de quadrado mágico 3×3, Geraldo demonstrou ser capaz de o resolver correctamente. Por iniciativa própria, teve então a ideia de transformar esse exercício num jogo digital educativo — conceptualizando e materializando uma aplicação completa com 150 níveis, estatísticas, conquistas e interface optimizada para telemóvel.',
     contributions: [
-      'Desenvolvimento integral da aplicação web',
-      'Sistema de níveis, estatísticas e conquistas',
-      'Interface, música, efeitos sonoros e optimização mobile',
+      'Ideia autónoma de transformar o desafio num jogo digital',
+      'Autoria conceptual e criação integral da aplicação',
+      'Arquitectura dos 150 níveis, estatísticas e conquistas',
+      'Design de interface, banda sonora, efeitos sonoros e optimização mobile',
     ],
     photos: [
       {
         src: 'assets/team/geraldo-sense-2.png',
-        alt: 'Geraldo Sense — retrato profissional',
+        alt: 'Geraldo Sense — criador do Quadrado Mágico',
         variant: 'main',
+        position: '50% 10%',
+        fit: 'cover',
       },
       {
         src: 'assets/team/geraldo-sense-1.png',
-        alt: 'Geraldo Sense — desenvolvedor do projecto',
+        alt: 'Geraldo Sense — autor e desenvolvedor',
         variant: 'secondary',
+        position: '50% 12%',
+        fit: 'cover',
       },
     ],
   },
   ideaProvider: {
-    role: 'Concepção',
-    title: 'Autor da Ideia Original · Orientação Pedagógica',
+    role: 'Desafio Original',
+    title: 'Autor da Publicação no WhatsApp',
     name: 'José Banganga Brás António',
     shortName: 'José Banganga',
     description:
-      'Autor original do conceito deste quebra-cabeça matemático e da abordagem pedagógica que o sustenta. A sua ideia de usar o quadrado mágico como ferramenta de raciocínio lógico deu origem a todo o projecto.',
+      'Publicou no WhatsApp um desafio matemático baseado no quadrado mágico 3×3. A partilha despertou curiosidade e permitiu que Geraldo Sense demonstrasse a resolução correcta da grelha — momento que precedeu, por iniciativa de Geraldo, a concepção deste jogo educativo.',
     contributions: [
-      'Ideia original do puzzle três vezes três',
-      'Fundamentação pedagógica e objectivos de aprendizagem',
-      'Inspiração para a evolução do jogo educativo',
+      'Publicação do desafio original no WhatsApp',
+      'Partilha informal do puzzle que despertou o interesse',
+      'Estímulo inicial que antecedeu a ideia do jogo',
     ],
     photos: [
       {
         src: 'assets/team/jose-banganga.png',
-        alt: 'José Banganga Brás António — autor da ideia original',
+        alt: 'José Banganga Brás António — autor do desafio WhatsApp',
         variant: 'main',
+        position: '50% 15%',
+        fit: 'cover',
       },
     ],
   },
@@ -69,13 +84,13 @@ export const CREDITS = {
         'Desenvolver o raciocínio lógico e o pensamento matemático',
         'Reforçar o cálculo mental de forma lúdica e progressiva',
         'Estimular a resolução de problemas com autonomia e persistência',
-        'Promover o aprendizagem através de desafios graduados e recompensas',
+        'Promover a aprendizagem através de desafios graduados e recompensas',
       ],
     },
     {
       title: 'Origem do Jogo',
       content:
-        'Este projecto nasceu da ideia de transformar um exercício clássico de matemática — o quadrado mágico — num jogo digital acessível, envolvente e adaptado ao contexto educativo angolano. A visão pedagógica de José Banganga Brás António foi materializada por Geraldo Sense numa experiência interactiva completa, com níveis, estatísticas, conquistas e interface optimizada para telemóvel.',
+        'Tudo começou quando José Banganga Brás António publicou no WhatsApp um desafio: completar um quadrado mágico 3×3. Geraldo de Assunção Simba Sense demonstrou que conseguia resolver a grelha correctamente. A partir desse momento — por iniciativa própria — Geraldo teve a ideia de transformar o exercício num jogo digital educativo e desenvolveu integralmente esta aplicação, com múltiplos mundos, estatísticas e conquistas. O mérito de José Banganga reside na partilha do desafio que serviu de estímulo; a ideia, concepção e realização do jogo são inteiramente de Geraldo Sense.',
     },
   ],
 };
@@ -226,6 +241,37 @@ export const UI_LABELS = {
       notifications: { title: 'Notificações', subtitle: 'Alertas e lembretes' },
       privacy: { title: 'Privacidade e Segurança', subtitle: 'Dados e permissões' },
       about: { title: 'Sobre o Jogo', subtitle: 'Informação e versão' },
+      reviews: { title: 'Críticas e Avaliações', subtitle: 'Opiniões e sugestões dos jogadores' },
+    },
+    reviews: {
+      formTitle: 'Deixar a sua crítica',
+      formIntro: 'Indique o seu nome, avalie o jogo com estrelas e partilhe a sua opinião. As críticas ficam guardadas de forma permanente e visíveis para todos os jogadores.',
+      nameLabel: 'O seu nome',
+      namePlaceholder: 'Ex.: Maria Silva',
+      nameHint: 'Obrigatório — identifica quem escreveu a crítica.',
+      ratingLabel: 'Avaliação geral',
+      commentLabel: 'Crítica sobre o jogo',
+      commentPlaceholder: 'Descreva a sua experiência, o que gostou ou o que poderia ser diferente…',
+      commentHint: 'Mínimo 10 caracteres.',
+      improvementsField: 'Sugestões de melhoria',
+      improvementsPlaceholder: 'O que gostaria que fosse melhorado ou adicionado?',
+      improvementsHint: 'Opcional — ideias para futuras versões.',
+      improvementsLabel: 'Sugestões',
+      submit: 'Publicar crítica',
+      submitting: 'A publicar…',
+      saved: 'Crítica publicada com sucesso!',
+      savedOffline: 'Crítica guardada neste dispositivo. Será sincronizada quando a ligação estiver disponível.',
+      listTitle: 'Críticas da comunidade',
+      listIntro: 'Opiniões de todos os jogadores, ordenadas da mais recente para a mais antiga.',
+      totalReviews: 'avaliações',
+      emptyList: 'Ainda não existem críticas. Seja o primeiro a avaliar o jogo!',
+      refresh: 'Actualizar',
+      syncing: 'A sincronizar críticas…',
+      localSyncNote: 'Modo local activo: as críticas deste dispositivo são guardadas permanentemente aqui. Para partilha global entre todos os jogadores, active a sincronização Firebase em reviewsConfig.js.',
+      errorName: 'Introduza um nome válido (2 a 48 caracteres).',
+      errorRating: 'Seleccione uma avaliação de 1 a 5 estrelas.',
+      errorComment: 'A crítica deve ter pelo menos 10 caracteres.',
+      errorImprovements: 'As sugestões excedem o limite de caracteres.',
     },
     privacyText: 'O Quadrado Mágico guarda apenas dados locais no seu dispositivo (progresso, estatísticas e preferências). Não recolhemos informação pessoal nem enviamos dados para servidores externos.',
     termsText: 'Ao utilizar este jogo educativo, concorda em usá-lo para fins de aprendizagem. O conteúdo é propriedade dos respetivos autores. O jogo é fornecido "como está", sem garantias.',
@@ -233,7 +279,7 @@ export const UI_LABELS = {
   info: {
     title: 'INFORMAÇÃO',
     credits: 'A Nossa Equipa',
-    teamSubtitle: 'Quem está por trás do projecto',
+    teamSubtitle: 'Criador e origem do projecto',
     contributions: 'Contribuições',
     back: '←',
   },

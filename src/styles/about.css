@@ -111,59 +111,64 @@
   border: 1px solid rgba(10, 35, 66, 0.07);
 }
 
-.team-profile--conception {
-  border-top: 3px solid var(--yellow-spark);
+.team-profile--creator {
+  border-top: 3px solid var(--navy);
 }
 
-.team-profile--development {
-  border-top: 3px solid var(--navy);
+.team-profile--challenge {
+  border-top: 3px solid var(--yellow-spark);
 }
 
 /* Fotos */
 .team-portrait {
-  background: linear-gradient(180deg, #f1f5f9 0%, #e8edf3 100%);
-  padding: 0.85rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.15rem 1rem;
+  background: transparent;
+}
+
+.team-portrait--stacked {
+  flex-direction: column;
+  gap: 0.7rem;
 }
 
 .team-portrait--single {
-  display: flex;
-  justify-content: center;
-}
-
-.team-portrait--single .team-portrait__frame {
-  width: 100%;
-  max-width: 280px;
-}
-
-.team-portrait--dual {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.65rem;
+  padding: 1.15rem;
 }
 
 .team-portrait__frame {
   margin: 0;
-  border-radius: 12px;
+  padding: 0;
   overflow: hidden;
-  background: #dfe6ef;
-  box-shadow: 0 2px 8px rgba(10, 35, 66, 0.1);
-  aspect-ratio: 3 / 4;
+  flex-shrink: 0;
+  line-height: 0;
 }
 
-.team-portrait__frame--primary {
-  border: 2px solid rgba(255, 255, 255, 0.9);
+.team-portrait__frame--round {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 16px rgba(10, 35, 66, 0.18);
+}
+
+.team-portrait--single .team-portrait__frame--round {
+  width: 140px;
+  height: 140px;
 }
 
 .team-portrait__frame--secondary {
-  border: 2px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 16px rgba(10, 35, 66, 0.14);
 }
 
 .team-portrait__frame img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 12%;
+  object-position: center 20%;
   display: block;
+  border-radius: 50%;
 }
 
 /* Corpo do perfil */
@@ -183,7 +188,12 @@
   color: var(--navy-mid);
 }
 
-.team-profile--conception .team-profile__role {
+.team-profile--creator .team-profile__role {
+  background: rgba(10, 35, 66, 0.1);
+  color: var(--navy);
+}
+
+.team-profile--challenge .team-profile__role {
   background: rgba(255, 193, 7, 0.2);
   color: #7a6200;
 }
@@ -255,7 +265,7 @@
   background: var(--navy-mid);
 }
 
-.team-profile--conception .team-profile__contributions li::before {
+.team-profile--challenge .team-profile__contributions li::before {
   background: var(--yellow-spark);
 }
 

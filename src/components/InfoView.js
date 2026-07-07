@@ -3,23 +3,27 @@ import { APP_INFO, CREDITS, GAME_DEFINITION, UI_LABELS } from '../config/gameDef
 function renderTeamPortrait(photos) {
   if (!photos?.length) return '';
 
+  const renderFrame = (photo, extraClass = '') => {
+    const fitClass = photo.fit === 'contain' ? ' team-portrait__frame--contain' : '';
+    const style = `object-position: ${photo.position ?? '50% 20%'};`;
+    return `
+      <figure class="team-portrait__frame team-portrait__frame--round ${extraClass}${fitClass}">
+        <img src="${photo.src}" alt="${photo.alt}" loading="lazy" decoding="async" style="${style}" />
+      </figure>`;
+  };
+
   if (photos.length >= 2) {
     return `
-      <div class="team-portrait team-portrait--dual">
-        ${photos.map((photo, i) => `
-          <figure class="team-portrait__frame ${i === 0 ? 'team-portrait__frame--primary' : 'team-portrait__frame--secondary'}">
-            <img src="${photo.src}" alt="${photo.alt}" loading="lazy" decoding="async" />
-          </figure>
-        `).join('')}
+      <div class="team-portrait team-portrait--dual team-portrait--stacked">
+        ${photos.map((photo, i) =>
+          renderFrame(photo, i === 0 ? 'team-portrait__frame--primary' : 'team-portrait__frame--secondary')
+        ).join('')}
       </div>`;
   }
 
-  const photo = photos[0];
   return `
     <div class="team-portrait team-portrait--single">
-      <figure class="team-portrait__frame team-portrait__frame--primary">
-        <img src="${photo.src}" alt="${photo.alt}" loading="lazy" decoding="async" />
-      </figure>
+      ${renderFrame(photos[0], 'team-portrait__frame--primary')}
     </div>`;
 }
 
@@ -92,8 +96,8 @@ export function renderInfoView(container, { onBack }) {
             <p class="team-section-intro">${CREDITS.teamIntro}</p>
           </header>
           <div class="team-list">
-            ${renderTeamProfile(CREDITS.ideaProvider, 'conception')}
-            ${renderTeamProfile(CREDITS.developer, 'development')}
+            ${renderTeamProfile(CREDITS.developer, 'creator')}
+            ${renderTeamProfile(CREDITS.ideaProvider, 'challenge')}
           </div>
         </section>
 

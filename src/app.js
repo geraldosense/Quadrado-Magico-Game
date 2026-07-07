@@ -11,13 +11,15 @@ import { renderHowToPlayView } from './components/HowToPlayView.js';
 import { renderSettingsView } from './components/SettingsView.js';
 import { renderStatsView, renderAchievementsView } from './components/StatsView.js';
 import { createGameView } from './components/GameView.js';
-import { UI_LABELS } from './config/gameDefinition.js';
+import { ReviewsStore } from './core/ReviewsStore.js';
+import { CREATOR_FLOAT, UI_LABELS } from './config/gameDefinition.js';
 
 class App {
   constructor() {
     this.engine = new GameEngine();
     this.settingsStore = new SettingsStore();
     this.progressStore = new ProgressStore();
+    this.reviewsStore = new ReviewsStore();
     this.soundManager = new SoundManager(this.settingsStore);
     this.currentLevelId = 1;
 
@@ -60,13 +62,45 @@ class App {
     });
 
     this.progressStore.subscribe(() => this.refreshViews());
+    this.creatorFloatEl = document.getElementById('creator-float');
+    this.menuReady = false;
+    this.mountCreatorFloat();
+    this.reviewsStore.init();
     this.init();
+  }
+
+  mountCreatorFloat() {
+    if (!this.creatorFloatEl) return;
+
+    const { photo, name, fullName, label, photoPosition } = CREATOR_FLOAT;
+    this.creatorFloatEl.innerHTML = `
+      <button type="button" class="creator-float__btn" data-action="creator-info"
+        aria-label="${fullName} — ${label}">
+        <span class="creator-float__wrap">
+          <span class="creator-float__pulse" aria-hidden="true"></span>
+          <span class="creator-float__avatar">
+            <img src="${photo}" alt="${name}" style="object-position: ${photoPosition}" />
+          </span>
+        </span>
+        <span class="creator-float__label">${label}</span>
+      </button>`;
+
+    this.creatorFloatEl.querySelector('[data-action="creator-info"]')?.addEventListener('click', () => {
+      if (this.menuReady) this.navigate('info');
+    });
+  }
+
+  updateCreatorFloat(view) {
+    if (!this.creatorFloatEl) return;
+    const visible = view === 'loading' || view === 'menu';
+    this.creatorFloatEl.classList.toggle('hidden', !visible);
   }
 
   init() {
     renderLoadingView(this.loadingContainer, {
       onComplete: () => {
         this.setupMenu();
+        this.menuReady = true;
         this.navigate('menu');
       },
     });
@@ -90,7 +124,7 @@ class App {
       onBack: () => this.navigate('menu'),
       onPlay: () => this.startLevel(this.getPlayLevelId()),
     });
-    renderSettingsView(this.settingsContainer, this.settingsStore, this.progressStore, {
+    renderSettingsView(this.settingsContainer, this.settingsStore, this.progressStore, this.reviewsStore, {
       onBack: () => this.navigate('menu'),
       onHowToPlay: () => this.navigate('howto'),
       onInfo: () => this.navigate('info'),
@@ -160,9 +194,11 @@ class App {
       el.classList.toggle('hidden', key !== view);
     });
     document.body.className = `view-${view}`;
+    this.updateCreatorFloat(view);
 
     if (view === 'settings') {
-      renderSettingsView(this.settingsContainer, this.settingsStore, this.progressStore, {
+      this.reviewsStore.fetchRemote?.();
+      renderSettingsView(this.settingsContainer, this.settingsStore, this.progressStore, this.reviewsStore, {
         onBack: () => this.navigate('menu'),
         onHowToPlay: () => this.navigate('howto'),
         onInfo: () => this.navigate('info'),

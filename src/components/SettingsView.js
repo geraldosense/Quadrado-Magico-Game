@@ -1,21 +1,26 @@
 import { APP_INFO, GAME_DEFINITION, UI_LABELS } from '../config/gameDefinition.js';
 import { ACCENT_COLORS } from '../utils/settingsTheme.js';
+import { formatReviewDate, renderStarPicker, renderStarRow } from '../utils/reviewStars.js';
 
 const SECTIONS = [
   { id: 'appearance', icon: '🎨', color: '#e8f0fa' },
   { id: 'sound', icon: '🔊', color: '#e8f8ef' },
   { id: 'gameplay', icon: '🎮', color: '#fef5e7' },
+  { id: 'reviews', icon: '💬', color: '#fff4e6' },
   { id: 'notifications', icon: '🔔', color: '#f0e8fa' },
   { id: 'privacy', icon: '🔒', color: '#fdeef6' },
   { id: 'about', icon: 'ℹ️', color: '#e6f7fb' },
 ];
 
-export function renderSettingsView(container, settingsStore, progressStore, callbacks) {
+export function renderSettingsView(container, settingsStore, progressStore, reviewsStore, callbacks) {
   let section = 'hub';
+  let reviewFormRating = 0;
+  let reviewSubmitting = false;
 
   const render = () => {
     const s = settingsStore.get();
     const L = UI_LABELS.settings;
+    const reviewState = reviewsStore?.getState?.() ?? { reviews: [], stats: { count: 0, average: 0 }, ready: true };
 
     container.innerHTML = `
       <div class="settings-page">
@@ -28,6 +33,7 @@ export function renderSettingsView(container, settingsStore, progressStore, call
           ${section === 'appearance' ? renderAppearance(s, L) : ''}
           ${section === 'sound' ? renderSound(s, L) : ''}
           ${section === 'gameplay' ? renderGameplay(s, L) : ''}
+          ${section === 'reviews' ? renderReviews(L, reviewState) : ''}
           ${section === 'notifications' ? renderNotifications(s, L) : ''}
           ${section === 'privacy' ? renderPrivacy(s, L) : ''}
           ${section === 'about' ? renderAbout(L) : ''}
@@ -112,6 +118,112 @@ export function renderSettingsView(container, settingsStore, progressStore, call
         <button type="button" class="settings-preview-btn" data-action="preview-sound">▶ ${L.previewSound}</button>
       </section>
     `;
+  }
+
+  function renderReviews(L, state) {
+    const { reviews, stats, remoteEnabled, syncing, savedAuthorName } = state;
+    const R = L.reviews;
+
+    const distBars = [5, 4, 3, 2, 1].map((stars) => {
+      const count = stats.distribution[stars - 1] ?? 0;
+      const pct = stats.count ? Math.round((count / stats.count) * 100) : 0;
+      return `
+        <div class="review-dist-row">
+          <span class="review-dist-label">${stars}★</span>
+          <span class="review-dist-bar"><span style="width:${pct}%"></span></span>
+          <span class="review-dist-count">${count}</span>
+        </div>`;
+    }).join('');
+
+    const list = reviews.length
+      ? reviews.map((r) => `
+          <article class="review-card">
+            <header class="review-card__header">
+              <div>
+                <strong class="review-card__author">${escapeHtml(r.authorName)}</strong>
+                <time class="review-card__date" datetime="${r.createdAt}">${formatReviewDate(r.createdAt)}</time>
+              </div>
+              <div class="review-card__stars" aria-label="${r.rating} de 5 estrelas">
+                ${renderStarRow(r.rating, { className: 'review-card-star' })}
+              </div>
+            </header>
+            <p class="review-card__comment">${escapeHtml(r.comment)}</p>
+            ${r.improvements ? `
+              <div class="review-card__improve">
+                <span class="review-card__improve-label">${R.improvementsLabel}</span>
+                <p>${escapeHtml(r.improvements)}</p>
+              </div>` : ''}
+          </article>`).join('')
+      : `<p class="review-empty">${R.emptyList}</p>`;
+
+    return `
+      <section class="settings-card review-summary-card">
+        <div class="review-summary">
+          <div class="review-summary__score">
+            <span class="review-summary__average">${stats.average.toFixed(1)}</span>
+            <div class="review-summary__stars">${renderStarRow(stats.average, { className: 'review-summary-star' })}</div>
+            <span class="review-summary__count">${stats.count} ${R.totalReviews}</span>
+          </div>
+          <div class="review-summary__dist">${distBars}</div>
+        </div>
+        ${!remoteEnabled ? `<p class="review-sync-note">${R.localSyncNote}</p>` : ''}
+        ${syncing ? `<p class="review-sync-loading">${R.syncing}</p>` : ''}
+      </section>
+
+      <section class="settings-card review-form-card">
+        <h3 class="settings-card-title">${R.formTitle}</h3>
+        <p class="review-form-intro">${R.formIntro}</p>
+        <form class="review-form" data-review-form novalidate>
+          <label class="review-field">
+            <span class="review-field__label">${R.nameLabel} <em>*</em></span>
+            <input type="text" name="authorName" class="review-input" maxlength="48"
+              placeholder="${R.namePlaceholder}" value="${escapeHtml(savedAuthorName)}" required autocomplete="name" />
+            <small class="review-field__hint">${R.nameHint}</small>
+          </label>
+
+          <fieldset class="review-field review-field--stars">
+            <legend class="review-field__label">${R.ratingLabel} <em>*</em></legend>
+            ${renderStarPicker('reviewRating', reviewFormRating)}
+          </fieldset>
+
+          <label class="review-field">
+            <span class="review-field__label">${R.commentLabel} <em>*</em></span>
+            <textarea name="comment" class="review-textarea" rows="4" maxlength="600"
+              placeholder="${R.commentPlaceholder}" required></textarea>
+            <small class="review-field__hint">${R.commentHint}</small>
+          </label>
+
+          <label class="review-field">
+            <span class="review-field__label">${R.improvementsField}</span>
+            <textarea name="improvements" class="review-textarea" rows="3" maxlength="600"
+              placeholder="${R.improvementsPlaceholder}"></textarea>
+            <small class="review-field__hint">${R.improvementsHint}</small>
+          </label>
+
+          <button type="submit" class="review-submit-btn" ${reviewSubmitting ? 'disabled' : ''}>
+            ${reviewSubmitting ? R.submitting : R.submit}
+          </button>
+        </form>
+      </section>
+
+      <section class="settings-card review-list-card">
+        <div class="review-list-header">
+          <h3 class="settings-card-title">${R.listTitle}</h3>
+          <button type="button" class="review-refresh-btn" data-action="refresh-reviews" ${syncing ? 'disabled' : ''}>
+            ↻ ${R.refresh}
+          </button>
+        </div>
+        <p class="review-list-intro">${R.listIntro}</p>
+        <div class="review-list">${list}</div>
+      </section>`;
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   function renderGameplay(s, L) {
@@ -300,6 +412,68 @@ export function renderSettingsView(container, settingsStore, progressStore, call
         render();
       }
     });
+
+    container.querySelector('[data-action="refresh-reviews"]')?.addEventListener('click', async () => {
+      if (reviewsStore?.fetchRemote) {
+        await reviewsStore.fetchRemote();
+        render();
+      }
+    });
+
+    container.querySelector('[data-review-form]')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (reviewSubmitting || !reviewsStore) return;
+
+      const form = e.target;
+      const fd = new FormData(form);
+      const rating = +fd.get('reviewRating');
+      reviewFormRating = rating || reviewFormRating;
+
+      reviewSubmitting = true;
+      render();
+
+      const result = await reviewsStore.submitReview({
+        authorName: fd.get('authorName'),
+        rating: fd.get('reviewRating'),
+        comment: fd.get('comment'),
+        improvements: fd.get('improvements'),
+      });
+
+      reviewSubmitting = false;
+
+      if (!result.ok) {
+        const R = UI_LABELS.settings.reviews;
+        const msg = result.error === 'name' ? R.errorName
+          : result.error === 'rating' ? R.errorRating
+          : result.error === 'comment' ? R.errorComment
+          : R.errorImprovements;
+        callbacks.onToast?.(msg);
+        render();
+        return;
+      }
+
+      reviewFormRating = 0;
+      form.reset();
+      const saved = reviewsStore.getSavedAuthorName();
+      form.querySelector('[name="authorName"]').value = saved;
+      callbacks.onToast?.(result.offline ? UI_LABELS.settings.reviews.savedOffline : UI_LABELS.settings.reviews.saved);
+      render();
+    });
+
+    container.querySelectorAll('.review-star-picker input[type="radio"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        reviewFormRating = +input.value;
+        container.querySelectorAll('.review-star-picker__icon').forEach((icon) => {
+          icon.classList.toggle('active', +icon.dataset.value <= reviewFormRating);
+        });
+      });
+    });
+
+    if (reviewFormRating > 0) {
+      container.querySelectorAll('.review-star-picker__icon').forEach((icon) => {
+        icon.classList.toggle('active', +icon.dataset.value <= reviewFormRating);
+      });
+    }
   }
 
   render();
